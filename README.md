@@ -143,6 +143,7 @@ Response: ["Halo: Combat Evolved", "Halo 2", "Half-Life"]
 
 4) Sürpriz öneri (random seçilmiş yüksek puanlı oyuna göre)
 GET /api/surprise
+
 Response:
 ```text
 {
