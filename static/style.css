@@ -399,8 +399,8 @@ body.light .info-steps li::before {
     margin: 2rem 1rem;
     padding: 2rem;
     animation: fadeIn 0.6s ease;
-    max-width: 900px; /* Form genişliğini sınırlar */
-    margin: 8rem auto 2rem auto; /* Ortalar */
+    max-width: 900px; 
+    margin: 8rem auto 2rem auto; 
 }
 
 .input-group {
@@ -546,7 +546,7 @@ body.light .autocomplete-item {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    margin: 0 auto 1.5rem auto; /* Ortala */
+    margin: 0 auto 1.5rem auto; 
     transition: var(--transition);
     width: fit-content;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -566,7 +566,7 @@ body.light .btn-text {
     box-shadow: 0 6px 12px rgba(108, 92, 231, 0.2);
 }
 
-/* SUBMIT BUTONU - ÖNERİLERİ GÖSTER */
+
 .form-actions {
     display: flex;
     justify-content: center;
@@ -577,21 +577,21 @@ body.light .btn-text {
     background: var(--gradient-primary);
     color: white;
     border: none;
-    padding: 1rem 3rem; /* Daha geniş padding */
-    border-radius: 50px; /* Oval şekil */
+    padding: 1rem 3rem; 
+    border-radius: 50px; 
     font-size: 1.1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4); /* Şık gölge */
+    box-shadow: 0 10px 20px rgba(108, 92, 231, 0.4); 
     text-transform: uppercase;
     letter-spacing: 1px;
-    width: auto; /* İçeriğe göre genişlik */
-    min-width: 250px; /* Minimum genişlik */
+    width: auto; 
+    min-width: 250px; 
 }
 
 .submit-btn:hover {
-    transform: translateY(-4px); /* Hover efekti */
+    transform: translateY(-4px); 
     box-shadow: 0 15px 30px rgba(108, 92, 231, 0.6);
     filter: brightness(1.1);
 }
@@ -614,7 +614,7 @@ body.light .btn-text {
     gap: 1.5rem;
 }
 
-/* RANGE INPUTS */
+
 .range-inputs {
     display: flex;
     gap: 0.5rem;
@@ -665,7 +665,7 @@ body.light .filter-info {
     color: var(--primary-dark);
 }
 
-/* CLEAR HISTORY BUTONU - GEÇMİŞİ TEMİZLE */
+
 .history-actions {
     display: flex;
     justify-content: center;
@@ -675,14 +675,14 @@ body.light .filter-info {
 .clear-history-btn {
     background: transparent;
     border: 1px solid var(--glass-border);
-    color: var(--text-secondary); /* Daha sönük renk */
+    color: var(--text-secondary); 
     padding: 0.7rem 2rem;
-    border-radius: 12px; /* Hafif yuvarlatılmış */
+    border-radius: 12px; 
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: var(--transition);
-    width: auto; /* Otomatik genişlik */
+    width: auto; 
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -694,8 +694,8 @@ body.light .clear-history-btn {
 }
 
 .clear-history-btn:hover {
-    background: rgba(108, 92, 231, 0.1); /* Hafif mor arka plan */
-    color: var(--primary-color); /* Mor yazı */
+    background: rgba(108, 92, 231, 0.1); 
+    color: var(--primary-color); 
     border-color: var(--primary-color);
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
@@ -738,7 +738,7 @@ body.light .input-group input[type="text"] {
     margin: 2rem 1rem;
     animation: fadeIn 0.8s ease;
     max-width: 1200px;
-    margin: 2rem auto; /* Ortala */
+    margin: 2rem auto; 
 }
 
 .section-title {
@@ -1071,10 +1071,10 @@ body.light .favorite-game:hover {
 
 
 .search-history {
-    margin: 2rem auto; /* Ortala */
+    margin: 2rem auto; 
     padding: 2rem;
     animation: fadeIn 1s ease;
-    max-width: 800px; /* Genişliği kısıtla */
+    max-width: 800px; 
 }
 
 .history-item {
