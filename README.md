@@ -56,7 +56,7 @@ Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin:
 
 ## 1. Projeyi Klonlayın (CMD/Bash)
 
-git clone [https://github.com/KULLANICI_ADINIZ/GameHorizon.git](https://github.com/KULLANICI_ADINIZ/GameHorizon.git)
+git clone [https://github.com/DioBey7/GameHorizon.git](https://github.com/DioBey7/GameHorizon.git)
 cd GameHorizon
 
 ## 2. Sanal Ortamı (Virtual Environment) Kurun (CMD/Bash)
