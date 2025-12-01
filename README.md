@@ -113,6 +113,7 @@ GET /api/search?q=Halo
 - year_min, year_max, playtime_min, playtime_max
 
 Response:
+```text
 {
   "results": [
     {
@@ -135,7 +136,7 @@ Response:
   "count": 1,
   "query": "Halo"
 }
-
+```
 3) Otomatik Tamamlama
 GET /api/autocomplete?q=hal
 Response: ["Halo: Combat Evolved", "Halo 2", "Half-Life"]
@@ -143,11 +144,12 @@ Response: ["Halo: Combat Evolved", "Halo 2", "Half-Life"]
 4) Sürpriz öneri (random seçilmiş yüksek puanlı oyuna göre)
 GET /api/surprise
 Response:
+```text
 {
   "source": {"Name": "Kaynak Oyun", "AppID": 12345},
   "results": [ ... aynı formatta öneriler ... ]
 }
-
+```
 ---
 
 ## Önemli notlar / Tavsiyeler
@@ -163,15 +165,21 @@ Response:
 - "Bellek uyarıları/çökme": BATCH_SIZE, MAX_WORKERS, SVD_COMPONENTS azaltın; fiziksel RAM artırın veya swap kullanın.
 
 ## Proje yapısı (kısa)
+```text
 GameHorizon/
 ├── app.py              # Flask sunucusu, arka plan model yüklemesi ve API
 ├── model.py            # Öneri mantığı, embedding, FAISS ve skor hesaplama
 ├── database.py         # ETL: games.json -> games.db (SQLite + FTS5)
 ├── config.py           # Konfigürasyon, çevre değişkenleri, varsayılanlar
-├── static/             # Frontend varlıkları (CSS, JS, manifest, service worker)
-├── templates/          # HTML şablonları
 ├── requirements.txt    # Python bağımlılıkları
-└── games.json          # (Elle eklenmeli) Steam dataset
+├── games.json          # (Manuel Eklenmeli) Kaynak veri seti
+├── static/             # Frontend varlıkları (CSS, JS, manifest)
+│   ├── style.css
+│   ├── script.js
+│   └── manifest.json
+└── templates/          # HTML şablonları
+    └── index.html
+```
 
 ## Geliştirilecekler (Roadmap)
 - Kullanıcı hesapları ve sunucu tarafı favori senkronizasyonu
