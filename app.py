@@ -1,3 +1,4 @@
+# API ve bağlantı ayarlarının yapıldığı app.py dosyası
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from model import GameRecommender
 from flask_cors import CORS
@@ -10,7 +11,7 @@ import threading
 import time
 import sys
 
-# Loglama Ayarları - Konsola basmasını garanti ediyoruz
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -27,7 +28,7 @@ class Config:
     CACHE_TIMEOUT = 3600
     RATE_LIMIT = "300 per hour"
 
-# Global Değişkenler
+
 recommender = None
 init_done = False
 init_error = None
@@ -63,7 +64,7 @@ def initialize_backend():
             init_error = str(e)
             logger.error(f"Model başlatma hatası: {e}", exc_info=True)
 
-# Flask Limiter Ayarları
+
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
