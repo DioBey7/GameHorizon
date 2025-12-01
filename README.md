@@ -54,32 +54,32 @@ Bu proje, yüksek performans ve ölçeklenebilirlik için modern teknolojiler ku
 
 Projeyi yerel makinenizde çalıştırmak için aşağıdaki adımları izleyin:
 
-1. Projeyi Klonlayın (CMD/Bash)
+## 1. Projeyi Klonlayın (CMD/Bash)
 
 git clone [https://github.com/KULLANICI_ADINIZ/GameHorizon.git](https://github.com/KULLANICI_ADINIZ/GameHorizon.git)
 cd GameHorizon
 
-3. Sanal Ortamı (Virtual Environment) Kurun (CMD/Bash)
+## 2. Sanal Ortamı (Virtual Environment) Kurun (CMD/Bash)
 
-# Windows için
+### Windows için
 python -m venv venv
 venv\Scripts\activate
 
-# macOS/Linux için
+### macOS/Linux için
 python3 -m venv venv
 source venv/bin/activate
 
-3. Bağımlılıkları Yükleyin (CMD/Bash)
+## 3. Bağımlılıkları Yükleyin (CMD/Bash)
 
 pip install -r requirements.txt
 
-4. Veri Setini Hazırlayın
+## 4. Veri Setini Hazırlayın
 
 ⚠️ Önemli: GitHub dosya boyutu sınırları nedeniyle veritabanı kaynak dosyası depoya dahil edilmemiştir.
 Kaggle üzerinden güncel Steam Games Dataset (JSON formatında) indirin.
 İndirdiğiniz dosyayı games.json olarak adlandırın ve proje ana dizinine atın.
 
-5. Uygulamayı Başlatın (CMD/Bash)
+## 5. Uygulamayı Başlatın (CMD/Bash)
    
 İlk çalıştırmada sistem games.json dosyasını işleyip, vektör modellerini eğiteceği için açılış (donanımınıza bağlı olarak) 1-5 dakika sürebilir. Sonraki açılışlar çok daha hızlıdır.
 
@@ -87,9 +87,9 @@ python app.py
 
 Tarayıcınızda http://localhost:5000 adresine gidin.
 
------------
+---
 
-### 📂 Proje Yapısı
+## 📂 Proje Yapısı
 GameHorizon/
 ├── app.py              # Flask sunucusu, Threading ve API endpointleri
 ├── model.py            # AI mantığı, FAISS indeksi ve Hibrit Skorlama motoru
@@ -104,7 +104,7 @@ GameHorizon/
 ├── requirements.txt    # Python bağımlılıkları
 └── games.json          # (Manuel Eklenmeli) Kaynak veri seti
 
-### 🔮 Gelecek Planları (Roadmap)
+## 🔮 Gelecek Planları (Roadmap)
 
 [ ] Kullanıcı Hesapları: Favorilerin bulutta saklanması.
 
@@ -114,7 +114,7 @@ GameHorizon/
 
 [ ] Canlı Fiyat Takibi: İndirimleri anlık gösterme.
 
-### 📄 Lisans
+## 📄 Lisans
 Bu proje eğitim ve portfolyo amaçlı geliştirilmiştir. MIT Lisansı altında açık kaynaklıdır.
 
 pip install -r requirements.txt
