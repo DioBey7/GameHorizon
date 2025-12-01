@@ -164,14 +164,14 @@ Response:
 
 ## Proje yapısı (kısa)
 GameHorizon/
-|├── app.py             | |# Flask sunucusu, arka plan model yüklemesi ve API |
-|├── model.py           | |# Öneri mantığı, embedding, FAISS ve skor hesaplama |
-|├── database.py        | | # ETL: games.json -> games.db (SQLite + FTS5) |
-|├── config.py          | | # Konfigürasyon, çevre değişkenleri, varsayılanlar |
-|├── static/            | | # Frontend varlıkları (CSS, JS, manifest, service worker) |
-|├── templates/         | |# HTML şablonları |
-|├── requirements.txt   | | # Python bağımlılıkları |
-|└── games.json         | | # (Elle eklenmeli) Steam dataset |
+├── app.py              # Flask sunucusu, arka plan model yüklemesi ve API
+├── model.py            # Öneri mantığı, embedding, FAISS ve skor hesaplama
+├── database.py         # ETL: games.json -> games.db (SQLite + FTS5)
+├── config.py           # Konfigürasyon, çevre değişkenleri, varsayılanlar
+├── static/             # Frontend varlıkları (CSS, JS, manifest, service worker)
+├── templates/          # HTML şablonları
+├── requirements.txt    # Python bağımlılıkları
+└── games.json          # (Elle eklenmeli) Steam dataset
 
 ## Geliştirilecekler (Roadmap)
 - Kullanıcı hesapları ve sunucu tarafı favori senkronizasyonu
