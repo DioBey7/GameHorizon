@@ -1,0 +1,31 @@
+# Sanal Ortam 
+venv/
+env/
+.env
+
+# Python Önbellekleri
+__pycache__/
+*.pyc
+
+# Veri Tabanı ve Büyük Dosyalar 
+games.db
+games.json
+games.json.stream
+*.pkl
+*.joblib
+models/vectors.joblib
+
+# Sistem Dosyaları
+.DS_Store
+Thumbs.db
+
+# Loglar ve Cache
+logs/
+api_cache/
+games.json.backup
+
+games.json
+
+games.json.backup
+
+games.db
