@@ -48,11 +48,11 @@ git clone https://github.com/DioBey7/GameHorizon.git
 cd GameHorizon
 
 2) Python sanal ortamı oluşturun ve aktifleştirin
-# Windows
+#### Windows
 python -m venv venv
 venv\Scripts\activate
 
-# macOS / Linux
+#### macOS / Linux
 python3 -m venv venv
 source venv/bin/activate
 
@@ -192,7 +192,4 @@ MIT — eğitim ve portfolyo amaçlı.
 Projeyle ilgili sorular, hata bildirimleri veya katkı istekleri için GitHub Issues kısmını kullanabilirsiniz.
 
 ---
-
-Teşekkürler! Bu README'yi gereksinimlerinize göre daha da özelleştirebilirim (örn. Docker talimatları, GitHub Actions CI, daha ayrıntılı konfigürasyon örnekleri).  
-```
 
