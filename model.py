@@ -1,3 +1,4 @@
+# Modelin eğitildiği, özelliklerinin ve parametrelerinin kullanıldığı, config dosyasının bağlandığı model.py dosyası.
 import pandas as pd
 import numpy as np
 import sqlite3
