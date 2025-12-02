@@ -44,21 +44,25 @@ Not: Model eğitimi / vektör oluşturma CPU üzerinde çalışacak şekilde aya
 
 ### Hızlı Başlangıç (local)
 1) Depoyu klonlayın
+```text
 git clone https://github.com/DioBey7/GameHorizon.git
 cd GameHorizon
-
-2) Python sanal ortamı oluşturun ve aktifleştirin
+```
+3) Python sanal ortamı oluşturun ve aktifleştirin
 #### Windows
+```
 python -m venv venv
 venv\Scripts\activate
-
+```
 #### macOS / Linux
+```
 python3 -m venv venv
 source venv/bin/activate
-
+```
 3) Bağımlılıkları yükleyin
+```
 pip install -r requirements.txt
-
+```
 Notlar:
 - PyTorch için CPU/GPU uyumlu tekerlekleri kullanın. requirements.txt içinde PyTorch satırı platforma göre (CPU/GPU) el ile ayarlanmış olabilir. Eğer yükleme sorunları yaşarsanız PyTorch'un resmi talimatlarını (https://pytorch.org/) takip edin.
 - FAISS kurulumunda bazı platformlarda ilave paketler gerekebilir (ör. libopenblas). Hata alırsanız sistem paket yöneticinizle gerekli kütüphaneleri kurun.
@@ -97,15 +101,18 @@ python app.py
 Tüm endpointler JSON döner. Örnek adres: http://localhost:5000
 
 1) Sağlık kontrolü
+```
 GET /api/health
+```
+````
 Response:
 {
   "status": "initializing" | "ready",
   "error": null | "message",
   "message": "Sistem yükleniyor..." | "Sistem aktif"
 }
-
-2) Arama (öneriler)
+````
+3) Arama (öneriler)
 GET /api/search?q=Halo
 İsteğe bağlı query parametreleri:
 - genres: "Action,RPG" (virgülle ayrılmış)
@@ -138,12 +145,17 @@ Response:
 }
 ```
 3) Otomatik Tamamlama
+```
 GET /api/autocomplete?q=hal
-Response: ["Halo: Combat Evolved", "Halo 2", "Half-Life"]
-
-4) Sürpriz öneri (random seçilmiş yüksek puanlı oyuna göre)
+```
+Response: 
+````
+["Halo: Combat Evolved", "Halo 2", "Half-Life"]
+````
+5) Sürpriz öneri (random seçilmiş yüksek puanlı oyuna göre)
+````
 GET /api/surprise
-
+````
 Response:
 ```text
 {
