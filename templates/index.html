@@ -64,7 +64,7 @@
                 <i class="fas fa-times"></i>
             </button>
             <h2 id="info-title"><i class="fas fa-magic"></i> <span data-translate="infoTitle">Oyun Keşif Yolculuğunuz</span></h2>
-            <p id="info-text" data-translate="infoText">GameHorizon, sevdiğiniz oyunlara benzer yeni oyunlar keşfetmenizi sağlayan akıllı bir steam oyun öneri yapay zekasıdır. Favori oyununuzu yazın, benzer oyunların listesini eşleşme yüzdeleri ve kriterleriyle beraber alın ve yeni maceralara yelken açın!</p>
+            <p id="info-text" data-translate="infoText">GameHorizon, sevdiğiniz oyunlara benzer yeni oyunları keşfetmenize yardımcı akıllı bir steam oyun öneri sistemidir. Favori oyununuzu yazın, benzer oyunların listesini eşleşme yüzdeleri ve kriterleriyle beraber alın ve yeni maceralara yelken açın!</p>
 
             <h3 id="how-to-use-title"><i class="fas fa-question-circle"></i> <span data-translate="howToUseTitle">Nasıl Kullanılır?</span></h3>
             <ol class="info-steps" id="info-steps">
@@ -75,7 +75,24 @@
                 <li id="step-5" data-translate="step5">Beğendiğin oyunun öneri kartına tıklayarak Steam sayfasına gidebilir paylaş butonuna basarak aldığın önerileri paylaşabilirsin.</li>
                 <li id="step-6" data-translate="step6">Geçmiş bölümünden önceki aramalarına ulaşabilir öneriler için kalp butonuna basarak favoriler kısmına önerileri ekleyebilirsin.</li>
                 <li id="step-7" data-translate="step7">Sağ üst köşeden tema ve dil ayarlarını değiştirebilirsin.</li>
+                <li id="step-8" data-translate="step8">Önerilen oyun kartlarındaki yorum butonuna tıklayarak kullanıcı yorumlarını oku ve kendi yorumunu ekle.</li>
             </ol>
+
+            <div class="warning-section">
+                <h3><i class="fas fa-exclamation-triangle"></i> <span data-translate="warningTitle">Önemli Hatırlatmalar</span></h3>
+                <ul class="warning-list">
+                    <li data-translate="warning1">Görüntülenen fiyatlar eklentiler ve ana oyunlar için yaklaşık fiyatlardır ve indirim dönemlerinde değişiklik gösterebilir.</li>
+                    <li data-translate="warning2">Öneriler; görsel, tür, oynanış ve fiyat gibi birçok faktörün karmaşık analiziyle oluşturulur.</li>
+                    <li data-translate="warning3">En doğru sonuçlar için oyun adlarını ve filtre terimlerini (Örn: Action, RPG) İngilizce ve tam yazmaya özen gösterin.</li>
+                    <li data-translate="warning4">Yorumlar, diğer kullanıcıların önerilen oyunlar hakkındaki deneyimlerini paylaşmaları için önemlidir. Lütfen etik kurallarına uyunuz.</li>
+                    <li data-translate="warning5">GameHorizon, Steam veritabanına bağlıdır ve bazı oyunlar öneri sisteminde yer almayabilir.</li>
+                    <li data-translate="warning6">Uygulama, internet bağlantısı gerektir ve bağlantı sorunları performansı etkileyebilir.</li>
+                    <li data-translate="warning7">Kullanıcı verileri (geçmiş ve favoriler) yalnızca tarayıcıda saklanır ve üçüncü taraflarla paylaşılmaz.</li>
+                    <li data-translate="warning8">GameHorizon, Steam'in resmi bir ürünü değildir ve bağımsız olarak geliştirilmiştir.</li>
+                    <li data-translate="warning9">Öneri ve fiyat bilgileri zamanla değişebilir; en güncel bilgiler için Steam'i kontrol ediniz.</li>
+                    <li data-translate="warning10">Daha fazla öneri ve iyileştirme için linkedin ve github linklerimden bana ulaşabilirsiniz.</li>
+                </ul>
+            </div>
 
             <button class="btn-info" id="gotItBtn">
                 <i class="fas fa-check"></i> <span id="got-it-text" data-translate="gotItText">ANLADIM!</span>
@@ -113,7 +130,7 @@
             </div>
 
             <button type="button" id="toggle-filters" class="btn-text">
-                <i class="fas fa-filter"></i> <span data-translate="toggleFilters">Gelişmiş Filtreler</span>
+                <i class="fas fa-sliders-h"></i> <span data-translate="toggleFilters">Gelişmiş Filtreler</span>
             </button>
 
             <div id="filter-panel" class="filter-panel" style="display: none;">
@@ -125,7 +142,7 @@
                             id="genre_filter"
                             name="genre_filter"
                             autocomplete="off"
-                            placeholder="Örneğin: Aksiyon, Macera"
+                            placeholder="Örneğin: Action, RPG"
                         />
                     </div>
                     <div class="input-group">
@@ -135,7 +152,7 @@
                             id="exclude_filter"
                             name="exclude_filter"
                             autocomplete="off"
-                            placeholder="Örneğin: Spor, Yarış"
+                            placeholder="Örneğin: Sports, Racing"
                         />
                     </div>
                 </div>
@@ -144,22 +161,22 @@
                     <div class="input-group">
                         <label><i class="fas fa-calendar-alt"></i> <span data-translate="yearRange">Yıl Aralığı:</span></label>
                         <div class="range-inputs">
-                            <input type="number" id="year_min" placeholder="Min" min="1990" max="2025">
-                            <input type="number" id="year_max" placeholder="Max" min="1990" max="2025">
+                            <input type="number" id="year_min" placeholder="Min" min="1990" max="2030" oninput="validity.valid||(value='');">
+                            <input type="number" id="year_max" placeholder="Max" min="1990" max="2030" oninput="validity.valid||(value='');">
                         </div>
                     </div>
                     <div class="input-group">
                         <label><i class="fas fa-clock"></i> <span data-translate="playtimeRange">Oynanış (Saat):</span></label>
                         <div class="range-inputs">
-                            <input type="number" id="playtime_min" placeholder="Min">
-                            <input type="number" id="playtime_max" placeholder="Max">
+                            <input type="number" id="playtime_min" placeholder="Min" min="0" oninput="validity.valid||(value='');">
+                            <input type="number" id="playtime_max" placeholder="Max" min="0" oninput="validity.valid||(value='');">
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="form-actions">
-                <button type="submit" id="btn-submit" class="btn-primary submit-btn">
+                <button type="submit" id="btn-submit" class="submit-btn">
                     <span id="btn-submit-text" data-translate="btnSubmitText">ÖNERİLERİ GÖSTER</span>
                 </button>
             </div>
@@ -178,11 +195,18 @@
         </aside>
     </main>
 
+    <footer class="footer glass-effect">
+        <div class="social-links">
+            <a href="https://github.com/DioBey7" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i> GitHub</a>
+            <a href="https://www.linkedin.com/in/beyza-yaz%C4%B1c%C4%B1-400183332" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
+        </div>
+        <p>&copy; 2025 GameHorizon</p>
+    </footer>
+
     <button id="installButton" class="install-button" style="display: none;">
         <i class="fas fa-download"></i> <span data-translate="installApp">Uygulamayı Yükle</span>
     </button>
 
     <script src="/static/script.js"></script>
-
 </body>
 </html>
