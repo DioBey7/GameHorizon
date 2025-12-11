@@ -33,10 +33,10 @@ except ImportError:
     class Config:
         DB_PATH = "games.db"
         MODEL_PATH = "models"
-        MIN_SIMILARITY = 0.25
-        MIN_POPULARITY = 15
+        MIN_SIMILARITY = 0.20
+        MIN_POPULARITY = 10
         RECOMMENDATION_COUNT = 15
-        SVD_COMPONENTS = 192
+        SVD_COMPONENTS = 200
         BATCH_SIZE = 2048
         MAX_RECOMMENDATIONS = 400
         GENRE_WEIGHT = 0.35
@@ -55,7 +55,7 @@ except ImportError:
         MIN_EXCLUSION_MATCH = 0.20
         PRICE_QUOTA = {'low': 6, 'mid': 5, 'high': 4}
         MAX_DEVELOPER_RECOMMENDATIONS = 2
-        RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike", "Soulslike", "Immersive Sim", "Grand Strategy", "4X"}
+        RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike", "Soulslike", "Immersive Sim", "Grand Strategy", "4X", "Life Sim", "Farming Sim"}
 
 @dataclass
 class ModelStats:
@@ -160,7 +160,10 @@ class OptimizedGameRecommender:
                        header_image, SteamURL, popularity_score, tags, short_description, 
                        detailed_description, release_date, average_playtime_forever, 
                        windows, mac, linux, categories 
-                FROM games WHERE popularity_score > ?
+                FROM games 
+                WHERE popularity_score > ?
+                GROUP BY CleanName
+                ORDER BY popularity_score DESC
             """
             self.df = pd.read_sql_query(query, conn, params=(self.MIN_POPULARITY,))
             conn.close()
@@ -274,6 +277,7 @@ class OptimizedGameRecommender:
 
         candidates = []
         seen_ids = set([int(self.df.iloc[i]["AppID"]) for i in target_indices])
+        seen_names = set([self.df.iloc[i]["CleanName"] for i in target_indices])
         developer_counts = defaultdict(int)
 
         for cand_idx, dist in zip(indices, distances):
@@ -282,7 +286,9 @@ class OptimizedGameRecommender:
             
             candidate = self.df.iloc[cand_idx]
             cand_id = int(candidate["AppID"])
-            if cand_id in seen_ids: continue
+            cand_clean_name = candidate["CleanName"]
+            
+            if cand_id in seen_ids or cand_clean_name in seen_names: continue
             
             if genre_filter:
                 candidate_genres = self._get_genres(candidate)
@@ -330,6 +336,7 @@ class OptimizedGameRecommender:
             })
             if dev: developer_counts[dev] += 1
             seen_ids.add(cand_id)
+            seen_names.add(cand_clean_name)
 
         candidates.sort(key=lambda x: x['similarity'], reverse=True)
         final_recs = self._refine_recommendations(candidates, n)
@@ -359,10 +366,14 @@ class OptimizedGameRecommender:
         faiss.normalize_L2(vec)
         D, I = self.name_index.search(vec, limit*3)
         candidates = []
+        seen_names = set()
         for idx in I[0]:
             if idx < 0 or idx >= len(self.df): continue
             name = self.df.iloc[idx]['Name']
-            if query in name.lower(): candidates.append(name)
+            clean_name = self.df.iloc[idx]['CleanName']
+            if query in name.lower() and clean_name not in seen_names:
+                 candidates.append(name)
+                 seen_names.add(clean_name)
         return candidates[:limit]
 
     def get_random_high_rated_game(self):
@@ -559,7 +570,7 @@ class OptimizedGameRecommender:
         visual_overlap = set(base['visual_features']) & set(cand['visual_features'])
         if visual_overlap: return True
 
-        styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly", "isometric", "first-person", "third-person"]
+        styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly", "isometric", "first-person", "third-person", "8-bit", "2d", "3d" , "top-down"]
         for s in styles:
             if s in b_text and s in c_text: return True
         return False
@@ -569,7 +580,6 @@ class OptimizedGameRecommender:
         seen = set()
         prices = defaultdict(int)
         
-        # Eğer çok az aday varsa skor barajını düşür
         if len(candidates) < n:
             return candidates
 
@@ -595,7 +605,12 @@ class OptimizedGameRecommender:
             'RPG': 4.5, 'Action-RPG': 4.8, 'Adventure': 4.2, 'Story Rich': 4.6,
             'Visual Novel': 4.3, 'Simulation': 3.8, 'Strategy': 3.7, 'Indie': 3.6,
             'Horror': 3.9, 'Roguelike': 4.2, 'Metroidvania': 4.1, 'Open World': 4.0,
-            'FPS': 3.8, 'Platformer': 3.5, 'Multiplayer': 3.2, 'Co-op': 3.4
+            'FPS': 3.8, 'Platformer': 3.5, 'Multiplayer': 3.2, 'Co-op': 3.4, 
+            "Cozy": 3.4, "Puzzle": 3.3, "Action": 3.7, "Casual": 3.1,
+            "Survival": 3.9, "Soulslike": 4.0, "Immersive Sim": 4.1,
+            "Grand Strategy": 4.2, "4X": 4.0, "Psychological Horror": 3.0,
+            "Analog Horror": 3.0, "Cyberpunk": 3.0, "8-bit": 2.8, "pixel art": 2.9,
+            "Free to Play": 2.0
         }
 
     def _init_developer_map(self):
@@ -629,13 +644,15 @@ class OptimizedGameRecommender:
             "roguelike", "battle royale", "sandbox", "stealth", "crafting", "physics",
             "hack and slash", "point and click", "real-time strategy", "tower defense",
             "puzzle", "visual novel", "card game", "deckbuilding", "rhythm", "management",
-            "base building", "exploration", "parkour", "permadeath", "looter shooter"
+            "base building", "exploration", "parkour", "permadeath", "looter shooter", "side-scroller",
+            "platformer", "fighting", "bullet hell", "dungeon crawler"
         ]
         self.theme_keywords = [
             "fantasy", "sci-fi", "horror", "cyberpunk", "medieval", "post-apocalyptic",
             "anime", "mystery", "war", "space", "zombies", "detective", "funny",
             "dystopian", "lovecraftian", "western", "pirates", "vampire", "noir",
-            "mythology", "superhero", "historical", "military", "futuristic"
+            "mythology", "superhero", "historical", "military", "futuristic", "steampunk",
+            "retro"
         ]
     
     def _init_visual_keywords(self):
@@ -643,7 +660,9 @@ class OptimizedGameRecommender:
             "pixel art", "voxel", "low poly", "realistic", "anime", "cartoon", 
             "hand-drawn", "isometric", "top-down", "first-person", "third-person", 
             "2d", "3d", "vr", "retro", "minimalist", "noir", "colorful", "dark", 
-            "atmospheric", "stylized", "cinematic", "text-based"
+            "atmospheric", "stylized", "cinematic", "text-based", "photorealistic",
+            "watercolor", "sketch", "neon", "futuristic", "gothic", "surreal",
+            "comic" , "pixelated", "low resolution", "8-bit", "16-bit"
         ]
 
 GameRecommender = OptimizedGameRecommender
