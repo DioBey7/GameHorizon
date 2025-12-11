@@ -29,20 +29,20 @@
                     step7: "Tema ve dil ayarlarını değiştir.",
                     step8: "Önerilen oyun kartlarındaki yorum butonuna tıklayarak kullanıcı yorumlarını oku ve kendi yorumunu ekle.",
                     warningTitle: "Önemli Hatırlatmalar",
-                    warning1: "Görüntülenen fiyatlar, eklentiler ve ana oyunlar için yaklaşık fiyatlardır ve indirim dönemlerinde değişiklik gösterebilir.",
-                    warning2: "Öneriler; görsel, tür, oynanış, tema, popülarite ve fiyat gibi birçok faktörün karmaşık analiziyle oluşturulur.",
+                    warning1: "Görüntülenen fiyatlar eklentiler ve ana oyunlar için yaklaşık fiyatlardır ve indirim dönemlerinde değişiklik gösterebilir.",
+                    warning2: "Öneriler; görsel, tür, oynanış ve fiyat gibi birçok faktörün karmaşık analiziyle oluşturulur.",
                     warning3: "En doğru sonuçlar için oyun adlarını ve filtre terimlerini (Örn: Action, RPG) İngilizce ve tam yazmaya özen gösterin.",
-                    warning4: "Yorumlar, diğer kullanıcıların önerilen oyunlar hakkındaki deneyimlerini paylaşmaları için önemlidir. Lütfen etik kurallarına uyunuz.",
+                    warning4: "Yorumlar, kullanıcıların önerilen oyunlar hakkındaki deneyimlerini paylaşmaları için önemlidir. Lütfen etik kurallarına uyunuz.",
                     warning5: "GameHorizon, Steam veritabanına bağlıdır ve bazı oyunlar öneri sisteminde yer almayabilir.",
-                    warning6: "Uygulama, internet bağlantısı gerektirir ve bağlantı sorunları performansı etkileyebilir.",
+                    warning6: "Uygulama, internet bağlantısı gerektir ve bağlantı sorunları performansı etkileyebilir.",
                     warning7: "Kullanıcı verileri (geçmiş ve favoriler) yalnızca tarayıcıda saklanır ve üçüncü taraflarla paylaşılmaz.",
                     warning8: "GameHorizon, Steam'in resmi bir ürünü değildir ve bağımsız olarak geliştirilmiştir.",
                     warning9: "Öneri ve fiyat bilgileri zamanla değişebilir; en güncel bilgiler için Steam'i kontrol ediniz.",
                     warning10: "Daha fazla öneri ve iyileştirme için linkedin ve github linklerimden bana ulaşabilirsiniz.",
-                    gotItText: "ANLADIM",
+                    gotItText: "ANLADIM!",
                     loadingText: "Sistem yükleniyor... Lütfen bekleyiniz.",
                     noResults: "Hiç sonuç bulunamadı.",
-                    errorMessage: "Bir hata oluştu.",
+                    errorMessage: "Aradığınız oyun veritabanımızda bulunamadı.",
                     placeholder: "Oyun adı... (Çoklu arama için: Oyun1 + Oyun2)",
                     darkThemeText: "KOYU TEMA",
                     lightThemeText: "AÇIK TEMA",
@@ -82,7 +82,9 @@
                     noComments: "Henüz yorum yapılmamış. İlk yorumu sen yap!",
                     yourCommentPlaceholder: "Yorumunuzu buraya yazın...",
                     submitComment: "GÖNDER",
-                    anonymousUser: "Anonim Oyuncu"
+                    anonymousUser: "Anonim Oyuncu",
+                    didYouMean: "Bunu mu demek istediniz?",
+                    randomRecsTitle: "Veritabanımızda bulamadık ama bunları sevebilirsin:"
                 },
                 en: {
                     title: "GameHorizon",
@@ -105,7 +107,7 @@
                     warning1: "Displayed average prices are for the base game and add-ons and may vary during sales.",
                     warning2: "Recommendations are generated through complex analysis of factors like visuals, genre, gameplay, and price.",
                     warning3: "For best results, ensure game names and filter terms (e.g., Action, RPG) are spelled correctly in English.",
-                    warning4: "Comments are important for sharing other users' experiences with recommended games. Please follow ethical guidelines.",
+                    warning4: "Comments are important for sharing users' experiences with recommended games. Please follow ethical guidelines.",
                     warning5: "GameHorizon relies on the Steam database, and some games may not be included in the recommendation system.",
                     warning6: "The application requires an internet connection, and connectivity issues may affect performance.",
                     warning7: "User data (history and favorites) is stored only in the browser and is not shared with third parties.",
@@ -115,7 +117,7 @@
                     gotItText: "GOT IT",
                     loadingText: "System loading...",
                     noResults: "No results found.",
-                    errorMessage: "An error occurred.",
+                    errorMessage: "The game you searched for was not found in our database.",
                     placeholder: "Game name... (Multi-search: Game1 + Game2)",
                     darkThemeText: "DARK THEME",
                     lightThemeText: "LIGHT THEME",
@@ -155,7 +157,9 @@
                     noComments: "No comments yet. Be the first!",
                     yourCommentPlaceholder: "Write your comment here...",
                     submitComment: "SUBMIT",
-                    anonymousUser: "Anonymous Player"
+                    anonymousUser: "Anonymous Player",
+                    didYouMean: "Did you mean?",
+                    randomRecsTitle: "We couldn't find it, but you might like these:"
                 }
             };
 
@@ -265,6 +269,12 @@
                 
                 const autocompleteItem = e.target.closest('.autocomplete-item');
                 if (autocompleteItem) return this.selectAutocompleteItem(autocompleteItem.dataset.value);
+                
+                const suggestionChip = e.target.closest('.suggestion-chip');
+                if(suggestionChip) {
+                    document.getElementById('game_name').value = suggestionChip.dataset.value;
+                    this.handleFormSubmit();
+                }
 
                 if (!e.target.closest('.autocomplete')) this.hideAutocomplete();
                 
@@ -296,7 +306,6 @@
                     this.toggleFavorite(favRemoveBtn.dataset.gameId);
                 }
 
-                // Modal Close Logic
                 if (e.target.classList.contains('modal-overlay') || e.target.closest('.close-modal')) {
                     this.closeModal();
                 }
@@ -376,9 +385,12 @@
             this.translatePage();
             if (save) localStorage.setItem('preferredLanguage', lang);
 
-            // Dynamically update search results text if present
             if (this.lastSearchResults) {
-                this.displayResults(this.lastSearchResults);
+                if(this.lastSearchResults.error) {
+                    this.showErrorWithSuggestions(this.lastSearchResults.query);
+                } else {
+                    this.displayResults(this.lastSearchResults);
+                }
             }
             this.renderFavorites();
         }
@@ -447,18 +459,83 @@
                 if (playMax) params.append('playtime_max', playMax);
 
                 const response = await fetch(`/api/search?${params.toString()}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                if (!response.ok) {
+                    this.showErrorWithSuggestions(gameName);
+                    this.lastSearchResults = { error: true, query: gameName };
+                    return;
+                }
+                
                 const data = await response.json();
-                if (data.error) throw new Error(data.error);
+                
+                if (data.error) {
+                     this.showErrorWithSuggestions(gameName);
+                     this.lastSearchResults = { error: true, query: gameName };
+                     return;
+                }
 
                 this.lastSearchResults = data;
                 this.displayResults(data);
                 this.addToSearchHistory(gameName);
             } catch (error) {
-                this.showError(this.getErrorMessage(error));
+                this.showErrorWithSuggestions(gameName);
             } finally {
                 this.hideLoadingState();
             }
+        }
+        
+        async showErrorWithSuggestions(query) {
+            const resultSection = document.getElementById('result');
+            const trans = this.translations[this.currentLang];
+            
+            let suggestions = [];
+            try {
+                 const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
+                 suggestions = await res.json();
+            } catch(e) {}
+
+            let html = `
+                <div class="error-box glass-effect">
+                    <h3><i class="fas fa-exclamation-circle"></i> ${trans.errorMessage}</h3>
+                    <p>${trans.noResults}</p>
+            `;
+
+            if (suggestions.length > 0) {
+                html += `
+                    <div class="suggestion-box">
+                        <h4>${trans.didYouMean}</h4>
+                        <div class="suggestion-list">
+                            ${suggestions.map(s => `<span class="suggestion-chip" data-value="${this.escapeHtml(s)}">${this.escapeHtml(s)}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`; 
+            
+            try {
+                const randomRes = await fetch('/api/surprise');
+                const randomData = await randomRes.json();
+                
+                if(randomData.results && randomData.results.length > 0) {
+                    const randomGames = randomData.results.slice(0, 4); 
+                    
+                    html += `
+                        <div class="random-recs-box">
+                            <h3 class="random-recs-title">${trans.randomRecsTitle}</h3>
+                            <div class="result-grid">
+                                ${randomGames.map((game, i) => this.createGameCardHtml(game, i)).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                         randomGames.forEach(game => this.createRadarChart(game));
+                    }, 100);
+                }
+            } catch(e) {}
+
+            resultSection.innerHTML = html;
         }
 
         getErrorMessage(error) {
@@ -469,14 +546,14 @@
         displayResults(data) {
             const resultSection = document.getElementById('result');
             if (!data || !data.results || data.results.length === 0) {
-                resultSection.innerHTML = `<div class="no-results glass-effect"><h3>${this.translations[this.currentLang].noResults}</h3></div>`;
+                this.showErrorWithSuggestions(data?.query || "");
                 return;
             }
             
             const validResults = data.results.filter(game => game.Name && game.similarity > 0.1);
             if(validResults.length === 0) {
-                 resultSection.innerHTML = `<div class="no-results glass-effect"><h3>${this.translations[this.currentLang].noResults}</h3></div>`;
-                return;
+                 this.showErrorWithSuggestions(data.query);
+                 return;
             }
 
             const similarGames = validResults.filter(g => (g.similarity || 0) * 100 >= 50);
@@ -622,7 +699,11 @@
 
         refreshCharts() {
             if (this.lastSearchResults) {
-                this.displayResults(this.lastSearchResults);
+                if(this.lastSearchResults.error) {
+                    this.showErrorWithSuggestions(this.lastSearchResults.query);
+                } else {
+                    this.displayResults(this.lastSearchResults);
+                }
             }
         }
 
@@ -831,7 +912,6 @@
             setTimeout(() => screen.style.display = 'none', 500);
         }
         
-        // --- COMMENT MODAL FUNCTIONS ---
         openCommentsModal(appId, gameName) {
             let modalOverlay = document.querySelector('.modal-overlay');
             if(!modalOverlay) {
@@ -900,7 +980,7 @@
                 if (!res.ok) throw new Error('Post failed');
                 
                 input.value = '';
-                this.fetchComments(appId); // Refresh list
+                this.fetchComments(appId);
             } catch (e) {
                 alert(this.translations[this.currentLang].errorMessage);
             }
