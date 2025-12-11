@@ -172,7 +172,8 @@ def process_game_record_optimized(game_data: Dict[str, Any], app_id: int) -> Opt
                 price = 0.0
         
         name = game_data.get('name', '')[:200]
-        clean_name = re.sub(r'[^\w\s]', '', name.lower())[:150]
+        clean_name = re.sub(r'[^\w\s]', '', name.lower()).strip()[:150]
+        
         genres = ', '.join(filter(None, game_data.get('genres', [])))[:500]
         developer = ', '.join(filter(None, game_data.get('developers', [])))[:200]
         publisher = ', '.join(filter(None, game_data.get('publishers', [])))[:200]
@@ -250,16 +251,23 @@ class DatabaseWriter:
         """
         
         current_batch = []
+        seen_names = set()
+
         while not self.stop_event.is_set() or not self.batch_queue.empty():
             try:
                 batch = self.batch_queue.get(timeout=1)
                 if batch:
-                    current_batch.extend(batch)
+                    for record in batch:
+                        if record[2] not in seen_names: 
+                            current_batch.append(record)
+                            seen_names.add(record[2])
+
                 if len(current_batch) >= 5000:
                     self.conn.executemany(insert_query, current_batch)
                     self.conn.commit()
                     processed_count += len(current_batch)
                     current_batch = []
+                    seen_names.clear()
                     logger.info(f"Processed: {processed_count}")
                 self.batch_queue.task_done()
             except queue.Empty:
@@ -312,7 +320,7 @@ def main():
     create_database()
     json_stream_file = Path("games.json.stream")
     if not json_stream_file.exists():
-        logger.error("games.json.stream bulunamadi. Lutfen convert_json_to_stream calistirin.")
+        logger.error("games.json.stream bulunamadi.")
         sys.exit(1)
     load_data_optimized(json_stream_file)
 
