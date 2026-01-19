@@ -1556,4 +1556,8 @@ body.light .social-links a:hover {
     .filter-row { grid-template-columns: 1fr; }
     .recommend-form { margin-top: 2rem; padding: 1.5rem; }
     .modal { width: 95%; max-height: 90vh; }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee

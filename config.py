@@ -1,3 +1,4 @@
+# Dinamik ağırlıkların; API, model eğitimi gibi ayarların ve parametrelerin belirlendiği config.py dosyası.
 import os
 import logging
 from dotenv import load_dotenv
@@ -77,7 +78,11 @@ class Config:
     BAYESIAN_PRIOR_WEIGHT = int(os.getenv('BAYESIAN_PRIOR_WEIGHT', 15))
     BAYESIAN_PRIOR_MEAN = float(os.getenv('BAYESIAN_PRIOR_MEAN', 0.6))
 
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
     FAISS_NLIST = int(os.getenv('FAISS_NLIST', 100))
     FAISS_NPROBE = int(os.getenv('FAISS_NPROBE', 10))
     MIN_FAISS_SAMPLES = int(os.getenv('MIN_FAISS_SAMPLES', 1000))
@@ -94,6 +99,7 @@ class Config:
         "quick money", "reskin", "poor quality", "bad reviews"
     ]
     
+<<<<<<< HEAD
 
     MODEL_INIT_TIMEOUT = int(os.getenv('MODEL_INIT_TIMEOUT', 300))
     MODEL_RETRY_ATTEMPTS = int(os.getenv('MODEL_RETRY_ATTEMPTS', 3))
@@ -103,6 +109,17 @@ class Config:
     PRICE_BRACKETS = {'low': (0, 9.99), 'mid': (10, 29.99), 'high': (30, float('inf'))}
     
     
+=======
+    
+    MODEL_INIT_TIMEOUT = int(os.getenv('MODEL_INIT_TIMEOUT', 300))
+    MODEL_RETRY_ATTEMPTS = int(os.getenv('MODEL_RETRY_ATTEMPTS', 3))
+    
+
+    PRICE_QUOTA = {'low': 5, 'mid': 4, 'high': 3}
+    PRICE_BRACKETS = {'low': (0, 9.99), 'mid': (10, 29.99), 'high': (30, float('inf'))}
+    
+ 
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
     MAX_DEVELOPER_RECOMMENDATIONS = 3
     
 
@@ -150,8 +167,12 @@ class Config:
         
         if cls.LOG_LEVEL not in ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']:
             errors.append(f"Geçersiz LOG_LEVEL: {cls.LOG_LEVEL}")
+
         
+<<<<<<< HEAD
         
+=======
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         weights = [
             cls.GENRE_WEIGHT, cls.GAMEPLAY_WEIGHT, cls.THEME_WEIGHT,
             cls.PRICE_WEIGHT, cls.VISUAL_WEIGHT, cls.DESCRIPTION_WEIGHT,

@@ -1,3 +1,4 @@
+# Modelin eğitildiği, özelliklerinin ve parametrelerinin kullanıldığı, config dosyasının bağlandığı model.py dosyası.
 import pandas as pd
 import numpy as np
 import sqlite3
@@ -54,7 +55,11 @@ except ImportError:
         MIN_EXCLUSION_MATCH = 0.20
         PRICE_QUOTA = {'low': 6, 'mid': 5, 'high': 4}
         MAX_DEVELOPER_RECOMMENDATIONS = 2
+<<<<<<< HEAD
         RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike", "Soulslike", "Immersive Sim", "Grand Strategy", "4X", "Life Sim", "Farming Sim" , "Rich Story"}
+=======
+        RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike", "Soulslike", "Immersive Sim", "Grand Strategy", "4X", "Life Sim", "Farming Sim"}
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
 
 @dataclass
 class ModelStats:
@@ -204,9 +209,16 @@ class OptimizedGameRecommender:
         faiss.normalize_L2(self.models['lsa_matrix'])
         
         print(">>> [MODEL] FAISS İçerik indeksi kuruluyor (IVF)...")
+<<<<<<< HEAD
         nlist = 200 
         quantizer = faiss.IndexFlatL2(self.models['lsa_matrix'].shape[1])
         self.content_index = faiss.IndexIVFFlat(quantizer, self.models['lsa_matrix'].shape[1], nlist)
+=======
+        d = self.models['lsa_matrix'].shape[1]
+        nlist = 200 
+        quantizer = faiss.IndexFlatL2(d)
+        self.content_index = faiss.IndexIVFFlat(quantizer, d, nlist)
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         self.content_index.train(self.models['lsa_matrix'])
         self.content_index.add(self.models['lsa_matrix'])
         
@@ -568,7 +580,11 @@ class OptimizedGameRecommender:
         visual_overlap = set(base['visual_features']) & set(cand['visual_features'])
         if visual_overlap: return True
 
+<<<<<<< HEAD
         styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly", "isometric", "first-person", "third-person", "8-bit", "2d", "3d" , "top-down", "side-scroller" , "voxel" , "minimalist" , "futuristic" , "dark" , "colorful" , "gritty" , "surreal" , "cel-shaded" , "photorealistic" , "2D" , "3D"]
+=======
+        styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly", "isometric", "first-person", "third-person", "8-bit", "2d", "3d" , "top-down"]
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         for s in styles:
             if s in b_text and s in c_text: return True
         return False
@@ -608,7 +624,11 @@ class OptimizedGameRecommender:
             "Survival": 3.9, "Soulslike": 4.0, "Immersive Sim": 4.1,
             "Grand Strategy": 4.2, "4X": 4.0, "Psychological Horror": 3.0,
             "Analog Horror": 3.0, "Cyberpunk": 3.0, "8-bit": 2.8, "pixel art": 2.9,
+<<<<<<< HEAD
             "Free to Play": 2.0 , "Funny": 2.0 , "Important Choices": 2.0
+=======
+            "Free to Play": 2.0
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         }
 
     def _init_developer_map(self):
@@ -633,8 +653,12 @@ class OptimizedGameRecommender:
             r'mass effect': "Mass Effect", r'fallout': "Fallout", r'civilization': "Civilization",
             r'borderlands': "Borderlands", r'bioshock': "BioShock", r'far cry': "Far Cry",
             r'tomb raider': "Tomb Raider", r'hitman': "Hitman", r'doom': "Doom",
+<<<<<<< HEAD
             r'terraria': "Terraria", r'stardew valley': "Stardew Valley",
             r"the sims 4": "The Sims 4" , r"undertale": "Undertale"
+=======
+            r'terraria': "Terraria", r'stardew valley': "Stardew Valley"
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         }
 
     def _init_enhanced_keywords(self):
@@ -644,14 +668,22 @@ class OptimizedGameRecommender:
             "hack and slash", "point and click", "real-time strategy", "tower defense",
             "puzzle", "visual novel", "card game", "deckbuilding", "rhythm", "management",
             "base building", "exploration", "parkour", "permadeath", "looter shooter", "side-scroller",
+<<<<<<< HEAD
             "platformer", "fighting", "bullet hell", "dungeon crawler" , "rich story"
+=======
+            "platformer", "fighting", "bullet hell", "dungeon crawler"
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         ]
         self.theme_keywords = [
             "fantasy", "sci-fi", "horror", "cyberpunk", "medieval", "post-apocalyptic",
             "anime", "mystery", "war", "space", "zombies", "detective", "funny",
             "dystopian", "lovecraftian", "western", "pirates", "vampire", "noir",
             "mythology", "superhero", "historical", "military", "futuristic", "steampunk",
+<<<<<<< HEAD
             "retro" , "memes" , "2D"
+=======
+            "retro"
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         ]
     
     def _init_visual_keywords(self):
@@ -661,7 +693,11 @@ class OptimizedGameRecommender:
             "2d", "3d", "vr", "retro", "minimalist", "noir", "colorful", "dark", 
             "atmospheric", "stylized", "cinematic", "text-based", "photorealistic",
             "watercolor", "sketch", "neon", "futuristic", "gothic", "surreal",
+<<<<<<< HEAD
             "comic" , "pixelated", "low resolution", "8-bit", "16-bit" , "2D" , "3D"
+=======
+            "comic" , "pixelated", "low resolution", "8-bit", "16-bit"
+>>>>>>> cdbd22f7fbdc20f081bee3139c5a9d5fa1f59fee
         ]
 
 GameRecommender = OptimizedGameRecommender

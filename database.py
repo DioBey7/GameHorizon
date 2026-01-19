@@ -1,3 +1,4 @@
+#Veri setinden verilerin çekildiği ve istenilen verilere göre işlendiği database.py dosyası.
 import sqlite3
 import json
 import re

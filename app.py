@@ -1,3 +1,4 @@
+# API ve bağlantı ayarlarının yapıldığı app.py dosyası
 from flask import Flask, request, jsonify, send_from_directory, render_template
 from model import GameRecommender
 from flask_cors import CORS
