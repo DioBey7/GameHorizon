@@ -32,29 +32,29 @@ except ImportError:
     class Config:
         DB_PATH = "games.db"
         MODEL_PATH = "models"
-        MIN_SIMILARITY = 0.12
-        MIN_POPULARITY = 5
+        MIN_SIMILARITY = 0.20
+        MIN_POPULARITY = 10
         RECOMMENDATION_COUNT = 15
-        SVD_COMPONENTS = 100
-        BATCH_SIZE = 1000
-        MAX_RECOMMENDATIONS = 200
-        GENRE_WEIGHT = 0.20
-        GAMEPLAY_WEIGHT = 0.18
-        THEME_WEIGHT = 0.16
-        PRICE_WEIGHT = 0.08
-        VISUAL_WEIGHT = 0.14
+        SVD_COMPONENTS = 200
+        BATCH_SIZE = 2048
+        MAX_RECOMMENDATIONS = 400
+        GENRE_WEIGHT = 0.35
+        GAMEPLAY_WEIGHT = 0.25
+        THEME_WEIGHT = 0.20
+        PRICE_WEIGHT = 0.10
+        VISUAL_WEIGHT = 0.30
         DESCRIPTION_WEIGHT = 0.15
-        TAG_WEIGHT = 0.16
-        CATEGORY_WEIGHT = 0.08
-        RARE_GENRE_BONUS = 0.06
-        VISUAL_STYLE_BONUS = 0.05
-        SERIES_BONUS = 0.15
-        DEVELOPER_BONUS = 0.10
-        EXCLUSION_PENALTY = -0.20
-        MIN_EXCLUSION_MATCH = 0.30
-        PRICE_QUOTA = {'low': 5, 'mid': 4, 'high': 3}
-        MAX_DEVELOPER_RECOMMENDATIONS = 3
-        RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike"}
+        TAG_WEIGHT = 0.25
+        CATEGORY_WEIGHT = 0.10
+        RARE_GENRE_BONUS = 0.12
+        VISUAL_STYLE_BONUS = 0.15
+        SERIES_BONUS = 0.25
+        DEVELOPER_BONUS = 0.18
+        EXCLUSION_PENALTY = -0.45
+        MIN_EXCLUSION_MATCH = 0.20
+        PRICE_QUOTA = {'low': 6, 'mid': 5, 'high': 4}
+        MAX_DEVELOPER_RECOMMENDATIONS = 2
+        RARE_GENRES = {"Visual Novel", "Psychological Horror", "Walking Simulator", "Metroidvania", "Roguelike", "Soulslike", "Immersive Sim", "Grand Strategy", "4X", "Life Sim", "Farming Sim" , "Rich Story"}
 
 @dataclass
 class ModelStats:
@@ -108,7 +108,7 @@ class OptimizedGameRecommender:
             MatchReason.GAMEPLAY: self.config.GAMEPLAY_WEIGHT,
             MatchReason.THEME: self.config.THEME_WEIGHT,
             MatchReason.PRICE: self.config.PRICE_WEIGHT,
-            MatchReason.POPULAR: 0.08,
+            MatchReason.POPULAR: 0.05,
             MatchReason.VISUAL: self.config.VISUAL_WEIGHT,
             MatchReason.DESCRIPTION: self.config.DESCRIPTION_WEIGHT,
             MatchReason.TAG: self.config.TAG_WEIGHT,
@@ -124,6 +124,7 @@ class OptimizedGameRecommender:
         self._init_developer_map()
         self._init_series_patterns()
         self._init_enhanced_keywords()
+        self._init_visual_keywords()
 
     def initialize(self, force_rebuild=False):
         try:
@@ -158,7 +159,10 @@ class OptimizedGameRecommender:
                        header_image, SteamURL, popularity_score, tags, short_description, 
                        detailed_description, release_date, average_playtime_forever, 
                        windows, mac, linux, categories 
-                FROM games WHERE popularity_score > ?
+                FROM games 
+                WHERE popularity_score > ?
+                GROUP BY CleanName
+                ORDER BY popularity_score DESC
             """
             self.df = pd.read_sql_query(query, conn, params=(self.MIN_POPULARITY,))
             conn.close()
@@ -176,6 +180,7 @@ class OptimizedGameRecommender:
             tqdm.pandas(desc="Gameplay Features")
             self.df['gameplay_features'] = self.df.apply(lambda r: self._extract_enhanced_keywords(r, self.gameplay_keywords), axis=1)
             self.df['theme_features'] = self.df.apply(lambda r: self._extract_enhanced_keywords(r, self.theme_keywords), axis=1)
+            self.df['visual_features'] = self.df.apply(lambda r: self._extract_enhanced_keywords(r, self.visual_keywords), axis=1)
             
             return True
         except Exception as e:
@@ -186,26 +191,31 @@ class OptimizedGameRecommender:
         print(">>> [MODEL] TF-IDF Matrisi oluşturuluyor...")
         combined_features = self.df['genres'].astype(str) + " " + \
                            self.df['tags'].astype(str) + " " + \
-                           self.df['short_description'].astype(str)
+                           self.df['short_description'].astype(str) + " " + \
+                           self.df['developer'].astype(str) + " " + \
+                           self.df['visual_features'].apply(lambda x: " ".join(x)).astype(str)
         
-        tfidf = TfidfVectorizer(max_features=10000, stop_words='english', dtype=np.float32)
+        tfidf = TfidfVectorizer(max_features=20000, stop_words='english', dtype=np.float32, min_df=2, ngram_range=(1, 2))
         tfidf_matrix = tfidf.fit_transform(combined_features)
         
         print(">>> [MODEL] SVD (LSA) Boyut indirgeme uygulanıyor...")
         svd = TruncatedSVD(n_components=self.config.SVD_COMPONENTS)
         self.models['lsa_matrix'] = svd.fit_transform(tfidf_matrix).astype('float32')
+        faiss.normalize_L2(self.models['lsa_matrix'])
         
-        print(">>> [MODEL] FAISS İçerik indeksi kuruluyor...")
-        d = self.models['lsa_matrix'].shape[1]
-        self.content_index = faiss.IndexFlatL2(d)
+        print(">>> [MODEL] FAISS İçerik indeksi kuruluyor (IVF)...")
+        nlist = 200 
+        quantizer = faiss.IndexFlatL2(self.models['lsa_matrix'].shape[1])
+        self.content_index = faiss.IndexIVFFlat(quantizer, self.models['lsa_matrix'].shape[1], nlist)
+        self.content_index.train(self.models['lsa_matrix'])
         self.content_index.add(self.models['lsa_matrix'])
         
-        print(">>> [MODEL] İsim arama indeksi oluşturuluyor (Bu biraz sürebilir)...")
+        print(">>> [MODEL] İsim arama indeksi oluşturuluyor...")
         self._build_name_index()
 
     def _build_name_index(self):
         names = self.df['Name'].fillna('').tolist()
-        batch_size = 256
+        batch_size = 512
         name_vecs_list = []
         
         for i in range(0, len(names), batch_size):
@@ -214,12 +224,12 @@ class OptimizedGameRecommender:
             name_vecs_list.append(vecs)
         
         name_vecs = np.vstack(name_vecs_list)
+        faiss.normalize_L2(name_vecs)
         d = name_vecs.shape[1]
         self.name_index = faiss.IndexFlatIP(d)
         self.name_index.add(name_vecs)
 
     def recommend_games(self, game_names: Union[str, List[str]], n: int = None, filters: dict = None) -> List[Dict[str, Any]]:
-        start_time = time.time()
         if n is None: n = self.RECOMMENDATION_COUNT
         
         filters = filters or {}
@@ -238,9 +248,7 @@ class OptimizedGameRecommender:
             self.stats.cache_hits += 1
             return self.recommendation_cache[cache_key]
 
-        if not self._models_loaded: 
-            logger.warning("Model yüklü değil, öneri yapılamaz.")
-            return []
+        if not self._models_loaded: return []
 
         target_indices = []
         for name in game_names:
@@ -259,13 +267,15 @@ class OptimizedGameRecommender:
             base_game = self.df.iloc[base_idx]
 
         faiss.normalize_L2(query_vector)
-        k_search = min(len(self.df), self.MAX_RECOMMENDATIONS * 4) 
+        self.content_index.nprobe = 40 
+        k_search = min(len(self.df), self.MAX_RECOMMENDATIONS * 6)
         distances, indices = self.content_index.search(query_vector.astype(np.float32), k_search)
         indices = indices[0]
         distances = distances[0]
 
         candidates = []
         seen_ids = set([int(self.df.iloc[i]["AppID"]) for i in target_indices])
+        seen_names = set([self.df.iloc[i]["CleanName"] for i in target_indices])
         developer_counts = defaultdict(int)
 
         for cand_idx, dist in zip(indices, distances):
@@ -274,7 +284,9 @@ class OptimizedGameRecommender:
             
             candidate = self.df.iloc[cand_idx]
             cand_id = int(candidate["AppID"])
-            if cand_id in seen_ids: continue
+            cand_clean_name = candidate["CleanName"]
+            
+            if cand_id in seen_ids or cand_clean_name in seen_names: continue
             
             if genre_filter:
                 candidate_genres = self._get_genres(candidate)
@@ -317,24 +329,25 @@ class OptimizedGameRecommender:
                 "explanation": explain,
                 "breakdown": breakdown,
                 "year": str(candidate.get('release_date', ''))[:4],
-                "playtime": int(candidate.get('average_playtime_forever', 0)),  # INT64 HATASI İÇİN DÜZELTME
+                "playtime": int(candidate.get('average_playtime_forever', 0)),
                 "popularity_score": float(candidate.get("popularity_score", 0))
             })
             if dev: developer_counts[dev] += 1
             seen_ids.add(cand_id)
+            seen_names.add(cand_clean_name)
 
         candidates.sort(key=lambda x: x['similarity'], reverse=True)
         final_recs = self._refine_recommendations(candidates, n)
         
         self.recommendation_cache[cache_key] = final_recs
-        self.stats.recommendation_time = time.time() - start_time
         return final_recs
 
     def _find_game_index(self, name):
         name = name.lower().strip()
         vec = self.text_model.encode([name], device='cpu').astype('float32')
+        faiss.normalize_L2(vec)
         D, I = self.name_index.search(vec, 1)
-        if D[0][0] > 0.65:
+        if D[0][0] > 0.70:
             return I[0][0]
         
         clean = re.sub(r'[^\w]', '', name)
@@ -348,17 +361,22 @@ class OptimizedGameRecommender:
         if not self._models_loaded: return []
         query = query.lower()
         vec = self.text_model.encode([query], device='cpu').astype('float32')
+        faiss.normalize_L2(vec)
         D, I = self.name_index.search(vec, limit*3)
         candidates = []
+        seen_names = set()
         for idx in I[0]:
             if idx < 0 or idx >= len(self.df): continue
             name = self.df.iloc[idx]['Name']
-            if query in name.lower(): candidates.append(name)
+            clean_name = self.df.iloc[idx]['CleanName']
+            if query in name.lower() and clean_name not in seen_names:
+                 candidates.append(name)
+                 seen_names.add(clean_name)
         return candidates[:limit]
 
     def get_random_high_rated_game(self):
         if self.df is None or self.df.empty: return None
-        subset = self.df[(self.df['popularity_score'] > 80) & (self.df['price'] > 0)]
+        subset = self.df[(self.df['popularity_score'] > 75) & (self.df['price'] > 0)]
         if subset.empty: return None
         game = subset.sample(1).iloc[0]
         return {"Name": game['Name'], "AppID": int(game['AppID'])}
@@ -366,12 +384,17 @@ class OptimizedGameRecommender:
     def _matches_genre_filter_enhanced(self, game_genres, filters, match_threshold=0.3):
         if not filters: return True
         if not game_genres: return False
-        game_genres_lower = [g.lower().strip() for g in game_genres]
+        
+        game_genres_lower = set([g.lower().strip() for g in game_genres])
         filter_terms_lower = [t.lower().strip() for t in filters]
-        if set(game_genres_lower) & set(filter_terms_lower): return True
+        
         for filter_term in filter_terms_lower:
-            for game_genre in game_genres_lower:
-                if filter_term in game_genre or game_genre in filter_term: return True
+            if filter_term in game_genres_lower:
+                return True
+            pattern = r'\b' + re.escape(filter_term) + r'\b'
+            for g in game_genres_lower:
+                if re.search(pattern, g):
+                    return True
         return False
 
     def _calculate_score_enhanced(self, base, candidate, dist, exclude_filter, is_multi=False):
@@ -405,14 +428,15 @@ class OptimizedGameRecommender:
         genre_intersection = set(base_genres) & set(cand_genres)
         is_rare = len(self.config.RARE_GENRES & set(base_genres)) > 0
         
-        vector_sim = max(0, 1 - (math.sqrt(dist) / 1.5)) 
+        vector_sim = max(0, 1.0 - (math.sqrt(dist) / 1.35))
 
-        if not genre_intersection and not is_rare and vector_sim < 0.35:
+        if not genre_intersection and not is_rare and vector_sim < 0.45:
             return None, [], None
         
         genre_sim = self._weighted_jaccard(set(base_genres), set(cand_genres))
         gameplay_sim = self._set_similarity(set(base['gameplay_features']), set(candidate['gameplay_features']))
         theme_sim = self._set_similarity(set(base['theme_features']), set(candidate['theme_features']))
+        visual_sim = self._set_similarity(set(base['visual_features']), set(candidate['visual_features']))
         
         price_sim = self._price_similarity(float(base['price']), float(candidate['price']))
         
@@ -432,13 +456,14 @@ class OptimizedGameRecommender:
             MatchReason.GENRE: self.dynamic_weights[MatchReason.GENRE] * genre_sim,
             MatchReason.GAMEPLAY: self.dynamic_weights[MatchReason.GAMEPLAY] * gameplay_sim,
             MatchReason.THEME: self.dynamic_weights[MatchReason.THEME] * theme_sim,
+            MatchReason.VISUAL: self.dynamic_weights[MatchReason.VISUAL] * visual_sim,
             MatchReason.PRICE: self.dynamic_weights[MatchReason.PRICE] * price_sim,
-            MatchReason.TAG: self.dynamic_weights[MatchReason.TAG] * 0.1, 
+            MatchReason.TAG: self.dynamic_weights[MatchReason.TAG] * 0.15, 
             MatchReason.DEVELOPER: self.config.DEVELOPER_BONUS if dev_match else 0,
             MatchReason.SERIES: self.config.SERIES_BONUS if series_match else 0
         }
         
-        score = sum(contributions.values()) + (vector_sim * 0.25) + visual_style_bonus
+        score = sum(contributions.values()) + (vector_sim * 0.40) + visual_style_bonus
         if is_rare: score += self.config.RARE_GENRE_BONUS
         
         if score < self.MIN_SIMILARITY: return None, [], None
@@ -446,9 +471,10 @@ class OptimizedGameRecommender:
         reasons = []
         if series_match: reasons.append(MatchReason.SERIES)
         if dev_match: reasons.append(MatchReason.DEVELOPER)
-        if genre_sim > 0.25: reasons.append(MatchReason.GENRE)
-        if gameplay_sim > 0.25: reasons.append(MatchReason.GAMEPLAY)
-        if theme_sim > 0.25: reasons.append(MatchReason.THEME)
+        if genre_sim > 0.3: reasons.append(MatchReason.GENRE)
+        if gameplay_sim > 0.3: reasons.append(MatchReason.GAMEPLAY)
+        if theme_sim > 0.3: reasons.append(MatchReason.THEME)
+        if visual_sim > 0.3: reasons.append(MatchReason.VISUAL)
         
         if reasons:
             primary = max(contributions, key=contributions.get)
@@ -538,7 +564,11 @@ class OptimizedGameRecommender:
     def _has_similar_visual_style(self, base, cand):
         b_text = (str(base['Name']) + " " + str(base.get('short_description',''))).lower()
         c_text = (str(cand['Name']) + " " + str(cand.get('short_description',''))).lower()
-        styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly"]
+        
+        visual_overlap = set(base['visual_features']) & set(cand['visual_features'])
+        if visual_overlap: return True
+
+        styles = ["pixel art", "retro", "realistic", "cartoon", "anime", "hand-drawn", "low poly", "isometric", "first-person", "third-person", "8-bit", "2d", "3d" , "top-down", "side-scroller" , "voxel" , "minimalist" , "futuristic" , "dark" , "colorful" , "gritty" , "surreal" , "cel-shaded" , "photorealistic" , "2D" , "3D"]
         for s in styles:
             if s in b_text and s in c_text: return True
         return False
@@ -547,11 +577,17 @@ class OptimizedGameRecommender:
         final = []
         seen = set()
         prices = defaultdict(int)
+        
+        if len(candidates) < n:
+            return candidates
+
         for c in candidates:
             if len(final) >= n: break
             if c['AppID'] in seen: continue
+            
             p_cat = 'high' if c['price'] > 30 else 'mid' if c['price'] > 10 else 'low'
             if prices[p_cat] >= self.config.PRICE_QUOTA[p_cat]: continue
+            
             final.append(c)
             seen.add(c['AppID'])
             prices[p_cat] += 1
@@ -567,7 +603,12 @@ class OptimizedGameRecommender:
             'RPG': 4.5, 'Action-RPG': 4.8, 'Adventure': 4.2, 'Story Rich': 4.6,
             'Visual Novel': 4.3, 'Simulation': 3.8, 'Strategy': 3.7, 'Indie': 3.6,
             'Horror': 3.9, 'Roguelike': 4.2, 'Metroidvania': 4.1, 'Open World': 4.0,
-            'FPS': 3.8, 'Platformer': 3.5, 'Multiplayer': 3.2, 'Co-op': 3.4
+            'FPS': 3.8, 'Platformer': 3.5, 'Multiplayer': 3.2, 'Co-op': 3.4, 
+            "Cozy": 3.4, "Puzzle": 3.3, "Action": 3.7, "Casual": 3.1,
+            "Survival": 3.9, "Soulslike": 4.0, "Immersive Sim": 4.1,
+            "Grand Strategy": 4.2, "4X": 4.0, "Psychological Horror": 3.0,
+            "Analog Horror": 3.0, "Cyberpunk": 3.0, "8-bit": 2.8, "pixel art": 2.9,
+            "Free to Play": 2.0 , "Funny": 2.0 , "Important Choices": 2.0
         }
 
     def _init_developer_map(self):
@@ -578,7 +619,8 @@ class OptimizedGameRecommender:
             "square enix": "Square Enix", "nintendo": "Nintendo", "sega": "Sega",
             "bioware": "BioWare", "blizzard": "Blizzard", "obsidian": "Obsidian",
             "bandai namco": "Bandai Namco", "activision": "Activision", "2k": "2K Games",
-            "paradox": "Paradox Interactive", "devolver": "Devolver Digital"
+            "paradox": "Paradox Interactive", "devolver": "Devolver Digital",
+            "re-logic": "Re-Logic", "concernedape": "ConcernedApe"
         }
 
     def _init_series_patterns(self):
@@ -590,7 +632,9 @@ class OptimizedGameRecommender:
             r'god of war': "God of War", r'persona': "Persona", r'yakuza': "Yakuza",
             r'mass effect': "Mass Effect", r'fallout': "Fallout", r'civilization': "Civilization",
             r'borderlands': "Borderlands", r'bioshock': "BioShock", r'far cry': "Far Cry",
-            r'tomb raider': "Tomb Raider", r'hitman': "Hitman", r'doom': "Doom"
+            r'tomb raider': "Tomb Raider", r'hitman': "Hitman", r'doom': "Doom",
+            r'terraria': "Terraria", r'stardew valley': "Stardew Valley",
+            r"the sims 4": "The Sims 4" , r"undertale": "Undertale"
         }
 
     def _init_enhanced_keywords(self):
@@ -598,12 +642,26 @@ class OptimizedGameRecommender:
             "open world", "turn-based", "fps", "rpg", "co-op", "multiplayer", "survival",
             "roguelike", "battle royale", "sandbox", "stealth", "crafting", "physics",
             "hack and slash", "point and click", "real-time strategy", "tower defense",
-            "puzzle", "visual novel", "card game", "deckbuilding"
+            "puzzle", "visual novel", "card game", "deckbuilding", "rhythm", "management",
+            "base building", "exploration", "parkour", "permadeath", "looter shooter", "side-scroller",
+            "platformer", "fighting", "bullet hell", "dungeon crawler" , "rich story"
         ]
         self.theme_keywords = [
             "fantasy", "sci-fi", "horror", "cyberpunk", "medieval", "post-apocalyptic",
             "anime", "mystery", "war", "space", "zombies", "detective", "funny",
-            "dystopian", "lovecraftian", "western", "pirates", "vampire", "noir"
+            "dystopian", "lovecraftian", "western", "pirates", "vampire", "noir",
+            "mythology", "superhero", "historical", "military", "futuristic", "steampunk",
+            "retro" , "memes" , "2D"
+        ]
+    
+    def _init_visual_keywords(self):
+        self.visual_keywords = [
+            "pixel art", "voxel", "low poly", "realistic", "anime", "cartoon", 
+            "hand-drawn", "isometric", "top-down", "first-person", "third-person", 
+            "2d", "3d", "vr", "retro", "minimalist", "noir", "colorful", "dark", 
+            "atmospheric", "stylized", "cinematic", "text-based", "photorealistic",
+            "watercolor", "sketch", "neon", "futuristic", "gothic", "surreal",
+            "comic" , "pixelated", "low resolution", "8-bit", "16-bit" , "2D" , "3D"
         ]
 
 GameRecommender = OptimizedGameRecommender

@@ -1,13 +1,15 @@
 (function() {
     'use strict';
 
-    class GameFinder {
+    class GameHorizon {
         constructor() {
             this.currentLang = 'tr';
             this.isDarkMode = true;
             this.searchHistory = [];
             this.favorites = {};
             this.charts = {}; 
+            this.lastSearchResults = null; 
+
             this.translations = {
                 tr: {
                     title: "GameHorizon",
@@ -19,16 +21,28 @@
                     infoText: "GameHorizon, sevdiğiniz oyunlara benzer yeni oyunları keşfetmenize yardımcı akıllı bir steam oyun öneri sistemidir.",
                     howToUseTitle: "Nasıl Kullanılır?",
                     step1: "Arama çubuğuna sevdiğin bir oyunun adını yaz. Çoklu arama için '+' kullanabilirsin (örn: Halo + Doom).",
-                    step2: "Önerilen oyunlardan birini seçerek veya 'Enter' tuşuna basarak direkt arama yapabilirsin.",
-                    step3: "Radar grafikleri ve benzerlik yüzdeleri ile detaylı analizi inceleyebilirsin.",
-                    step4: "Gelişmiş filtreleri kullanarak yıl, oynanış süresi, dışlanacak/eklenecek türler gibi kriterleri belirleyebilirsin.",
-                    step5: "Steam sayfasına gidebilir veya önerilerini paylaşabilirsin.",
-                    step6: "Önerilerini kaybetmemek için favorilere ekleyebilir ve geçmiş aramalarını yönetebilirsin.",
-                    step7: "Tema ve dil ayarlarını tercihlerine göre değiştirebilirsin.",
-                    gotItText: "ANLADIM",
+                    step2: "Önerilen oyunlardan birini seç veya 'Enter' tuşuna basarak direkt arama yap.",
+                    step3: "Radar grafikleri ve benzerlik yüzdeleri ile detaylı analizi incele.",
+                    step4: "Gelişmiş filtreleri kullanarak yıl, oynanış süresi gibi kriterleri belirle.",
+                    step5: "Steam sayfasına git veya paylaş.",
+                    step6: "Favorilere ekle ve geçmiş aramalarını yönet.",
+                    step7: "Tema ve dil ayarlarını değiştir.",
+                    step8: "Önerilen oyun kartlarındaki yorum butonuna tıklayarak kullanıcı yorumlarını oku ve kendi yorumunu ekle.",
+                    warningTitle: "Önemli Hatırlatmalar",
+                    warning1: "Görüntülenen fiyatlar eklentiler ve ana oyunlar için yaklaşık fiyatlardır ve indirim dönemlerinde değişiklik gösterebilir.",
+                    warning2: "Öneriler; görsel, tür, oynanış ve fiyat gibi birçok faktörün karmaşık analiziyle oluşturulur.",
+                    warning3: "En doğru sonuçlar için oyun adlarını ve filtre terimlerini (Örn: Action, RPG) İngilizce ve tam yazmaya özen gösterin.",
+                    warning4: "Yorumlar, kullanıcıların önerilen oyunlar hakkındaki deneyimlerini paylaşmaları için önemlidir. Lütfen etik kurallarına uyunuz.",
+                    warning5: "GameHorizon, Steam veritabanına bağlıdır ve bazı oyunlar öneri sisteminde yer almayabilir.",
+                    warning6: "Uygulama, internet bağlantısı gerektir ve bağlantı sorunları performansı etkileyebilir.",
+                    warning7: "Kullanıcı verileri (geçmiş ve favoriler) yalnızca tarayıcıda saklanır ve üçüncü taraflarla paylaşılmaz.",
+                    warning8: "GameHorizon, Steam'in resmi bir ürünü değildir ve bağımsız olarak geliştirilmiştir.",
+                    warning9: "Öneri ve fiyat bilgileri zamanla değişebilir; en güncel bilgiler için Steam'i kontrol ediniz.",
+                    warning10: "Daha fazla öneri ve iyileştirme için linkedin ve github linklerimden bana ulaşabilirsiniz.",
+                    gotItText: "ANLADIM!",
                     loadingText: "Sistem yükleniyor... Lütfen bekleyiniz.",
                     noResults: "Hiç sonuç bulunamadı.",
-                    errorMessage: "Bir hata oluştu.",
+                    errorMessage: "Aradığınız oyun veritabanımızda bulunamadı.",
                     placeholder: "Oyun adı... (Çoklu arama için: Oyun1 + Oyun2)",
                     darkThemeText: "KOYU TEMA",
                     lightThemeText: "AÇIK TEMA",
@@ -57,7 +71,20 @@
                     visual: "Görsel",
                     genre: "Tür",
                     gameplay: "Oynanış",
-                    popularity: "Popülerlik"
+                    popularity: "Popülerlik",
+                    noHistory: "Henüz arama geçmişi yok.",
+                    invalidInput: "Lütfen geçerli bir oyun adı giriniz.",
+                    networkError: "Bağlantı hatası. Lütfen internetinizi kontrol edin.",
+                    unknownError: "Beklenmedik bir hata oluştu.",
+                    genreFilterPlaceholder: "Örn: Action, RPG",
+                    excludeFilterPlaceholder: "Örn: Sports, Racing",
+                    commentsTitle: "Kullanıcı Yorumları",
+                    noComments: "Henüz yorum yapılmamış. İlk yorumu sen yap!",
+                    yourCommentPlaceholder: "Yorumunuzu buraya yazın...",
+                    submitComment: "GÖNDER",
+                    anonymousUser: "Anonim Oyuncu",
+                    didYouMean: "Bunu mu demek istediniz?",
+                    randomRecsTitle: "Veritabanımızda bulamadık ama bunları sevebilirsin:"
                 },
                 en: {
                     title: "GameHorizon",
@@ -69,16 +96,28 @@
                     infoText: "GameHorizon is an intelligent recommendation system to help you discover new games.",
                     howToUseTitle: "How to Use?",
                     step1: "Type a game name. Use '+' for multi-game search (e.g., Halo + Doom).",
-                    step2: "You can select a suggestion or press 'Enter' to search directly.",
-                    step3: "You can analyze recommendations with radar charts and similarity scores.",
-                    step4: "You can use advanced filters for year, playtime, excluded/included genres, etc.",
-                    step5: "You can view your recommendations on Steam or share them.",
-                    step6: "You can add your recommendations to favorites and manage history.",
-                    step7: "You can change theme and language according to your preferences.",
+                    step2: "Select a suggestion or press 'Enter'.",
+                    step3: "Analyze with radar charts and similarity scores.",
+                    step4: "Use advanced filters for year, playtime, etc.",
+                    step5: "View on Steam or share.",
+                    step6: "Add to favorites and manage history.",
+                    step7: "Change theme and language.",
+                    step8: "Read and add user comments by clicking the comment button on game cards.",
+                    warningTitle: "Important Reminders",
+                    warning1: "Displayed average prices are for the base game and add-ons and may vary during sales.",
+                    warning2: "Recommendations are generated through complex analysis of factors like visuals, genre, gameplay, and price.",
+                    warning3: "For best results, ensure game names and filter terms (e.g., Action, RPG) are spelled correctly in English.",
+                    warning4: "Comments are important for sharing users' experiences with recommended games. Please follow ethical guidelines.",
+                    warning5: "GameHorizon relies on the Steam database, and some games may not be included in the recommendation system.",
+                    warning6: "The application requires an internet connection, and connectivity issues may affect performance.",
+                    warning7: "User data (history and favorites) is stored only in the browser and is not shared with third parties.",
+                    warning8: "GameHorizon is not an official Steam product and is independently developed.",
+                    warning9: "Recommendations and price information may change over time; please check Steam for the most up-to-date information.",
+                    warning10: "For more recommendations and improvements, you can reach me via my LinkedIn and GitHub links.",
                     gotItText: "GOT IT",
                     loadingText: "System loading...",
                     noResults: "No results found.",
-                    errorMessage: "An error occurred.",
+                    errorMessage: "The game you searched for was not found in our database.",
                     placeholder: "Game name... (Multi-search: Game1 + Game2)",
                     darkThemeText: "DARK THEME",
                     lightThemeText: "LIGHT THEME",
@@ -107,7 +146,20 @@
                     visual: "Visual",
                     genre: "Genre",
                     gameplay: "Gameplay",
-                    popularity: "Popularity"
+                    popularity: "Popularity",
+                    noHistory: "No search history yet.",
+                    invalidInput: "Please enter a valid game name.",
+                    networkError: "Network error. Please check your connection.",
+                    unknownError: "An unexpected error occurred.",
+                    genreFilterPlaceholder: "E.g., Action, RPG",
+                    excludeFilterPlaceholder: "E.g., Sports, Racing",
+                    commentsTitle: "User Reviews",
+                    noComments: "No comments yet. Be the first!",
+                    yourCommentPlaceholder: "Write your comment here...",
+                    submitComment: "SUBMIT",
+                    anonymousUser: "Anonymous Player",
+                    didYouMean: "Did you mean?",
+                    randomRecsTitle: "We couldn't find it, but you might like these:"
                 }
             };
 
@@ -143,14 +195,22 @@
         }
 
         showToast(message, type = 'info') {
+            const existingToasts = document.querySelectorAll('.toast');
+            existingToasts.forEach(t => t.remove());
+
             const toast = document.createElement('div');
             toast.className = `toast toast-${type}`;
             toast.textContent = message;
             document.body.appendChild(toast);
+            
+            void toast.offsetWidth;
+            
             setTimeout(() => toast.classList.add('show'), 100);
             setTimeout(() => {
                 toast.classList.remove('show');
-                setTimeout(() => document.body.removeChild(toast), 300);
+                setTimeout(() => {
+                    if(document.body.contains(toast)) document.body.removeChild(toast);
+                }, 300);
             }, 3000);
         }
 
@@ -209,6 +269,12 @@
                 
                 const autocompleteItem = e.target.closest('.autocomplete-item');
                 if (autocompleteItem) return this.selectAutocompleteItem(autocompleteItem.dataset.value);
+                
+                const suggestionChip = e.target.closest('.suggestion-chip');
+                if(suggestionChip) {
+                    document.getElementById('game_name').value = suggestionChip.dataset.value;
+                    this.handleFormSubmit();
+                }
 
                 if (!e.target.closest('.autocomplete')) this.hideAutocomplete();
                 
@@ -216,16 +282,21 @@
                 if(card) {
                     const gameId = card.dataset.gameId;
                     const gameDataElement = card.querySelector('[data-game-data]');
-                    const gameData = JSON.parse(gameDataElement.dataset.gameData);
+                    if(gameDataElement){
+                        const gameData = JSON.parse(gameDataElement.dataset.gameData);
 
-                    if (e.target.closest('.favorite-btn')) {
-                        e.stopPropagation();
-                        this.toggleFavorite(gameId, gameData);
-                    } else if (e.target.closest('.share-btn')) {
-                        e.stopPropagation();
-                        this.shareGame(gameData);
-                    } else if (!e.target.closest('.btn-view')) {
-                         window.open(gameData.steamUrl, '_blank');
+                        if (e.target.closest('.favorite-btn')) {
+                            e.stopPropagation();
+                            this.toggleFavorite(gameId, gameData);
+                        } else if (e.target.closest('.share-btn')) {
+                            e.stopPropagation();
+                            this.shareGame(gameData);
+                        } else if (e.target.closest('.comment-btn')) {
+                            e.stopPropagation();
+                            this.openCommentsModal(gameId, gameData.name);
+                        } else if (!e.target.closest('.btn-view')) {
+                             window.open(gameData.steamUrl, '_blank');
+                        }
                     }
                 }
                 
@@ -234,12 +305,17 @@
                     e.stopPropagation();
                     this.toggleFavorite(favRemoveBtn.dataset.gameId);
                 }
+
+                if (e.target.classList.contains('modal-overlay') || e.target.closest('.close-modal')) {
+                    this.closeModal();
+                }
             });
 
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     this.hideAutocomplete();
                     this.toggleFavorites(false);
+                    this.closeModal();
                 }
             });
         }
@@ -283,6 +359,7 @@
             });
             this.updateDynamicTexts();
             this.updatePlaceholders();
+            this.renderSearchHistory();
         }
 
         updateDynamicTexts() {
@@ -295,18 +372,27 @@
         }
 
         updatePlaceholders() {
-            document.getElementById('genre_filter').placeholder = this.currentLang === 'tr' ? "Örn: Action, RPG (ingilizce yazım önemli)" : "E.g., Action, RPG";
-            document.getElementById('exclude_filter').placeholder = this.currentLang === 'tr' ? "Örn: Sports (ingilizce yazım önemli)" : "E.g., Sports";
+            document.getElementById('genre_filter').placeholder = this.translations[this.currentLang].genreFilterPlaceholder;
+            document.getElementById('exclude_filter').placeholder = this.translations[this.currentLang].excludeFilterPlaceholder;
         }
 
         changeLanguage(lang, save = true) {
-            if (this.currentLang === lang) return;
+            if (this.currentLang === lang && save) return; 
             this.currentLang = lang;
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
             });
             this.translatePage();
             if (save) localStorage.setItem('preferredLanguage', lang);
+
+            if (this.lastSearchResults) {
+                if(this.lastSearchResults.error) {
+                    this.showErrorWithSuggestions(this.lastSearchResults.query);
+                } else {
+                    this.displayResults(this.lastSearchResults);
+                }
+            }
+            this.renderFavorites();
         }
 
         toggleTheme(save = true) {
@@ -332,6 +418,7 @@
                 if(!response.ok) throw new Error('API Error');
                 const data = await response.json();
                 document.getElementById('game_name').value = data.source.Name;
+                this.lastSearchResults = data;
                 this.displayResults(data);
             } catch (e) {
                 this.showError(this.translations[this.currentLang].errorMessage);
@@ -344,10 +431,15 @@
             const gameInput = document.getElementById('game_name');
             const genreInput = document.getElementById('genre_filter');
             const excludeInput = document.getElementById('exclude_filter');
-            const yearMin = document.getElementById('year_min').value;
-            const yearMax = document.getElementById('year_max').value;
-            const playMin = document.getElementById('playtime_min').value;
-            const playMax = document.getElementById('playtime_max').value;
+            let yearMin = document.getElementById('year_min').value;
+            let yearMax = document.getElementById('year_max').value;
+            let playMin = document.getElementById('playtime_min').value;
+            let playMax = document.getElementById('playtime_max').value;
+
+            if (yearMin && yearMin < 0) yearMin = 0;
+            if (yearMax && yearMax < 0) yearMax = 0;
+            if (playMin && playMin < 0) playMin = 0;
+            if (playMax && playMax < 0) playMax = 0;
 
             const gameName = gameInput.value.trim();
 
@@ -367,17 +459,83 @@
                 if (playMax) params.append('playtime_max', playMax);
 
                 const response = await fetch(`/api/search?${params.toString()}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                if (!response.ok) {
+                    this.showErrorWithSuggestions(gameName);
+                    this.lastSearchResults = { error: true, query: gameName };
+                    return;
+                }
+                
                 const data = await response.json();
-                if (data.error) throw new Error(data.error);
+                
+                if (data.error) {
+                     this.showErrorWithSuggestions(gameName);
+                     this.lastSearchResults = { error: true, query: gameName };
+                     return;
+                }
 
+                this.lastSearchResults = data;
                 this.displayResults(data);
                 this.addToSearchHistory(gameName);
             } catch (error) {
-                this.showError(this.getErrorMessage(error));
+                this.showErrorWithSuggestions(gameName);
             } finally {
                 this.hideLoadingState();
             }
+        }
+        
+        async showErrorWithSuggestions(query) {
+            const resultSection = document.getElementById('result');
+            const trans = this.translations[this.currentLang];
+            
+            let suggestions = [];
+            try {
+                 const res = await fetch(`/api/autocomplete?q=${encodeURIComponent(query)}`);
+                 suggestions = await res.json();
+            } catch(e) {}
+
+            let html = `
+                <div class="error-box glass-effect">
+                    <h3><i class="fas fa-exclamation-circle"></i> ${trans.errorMessage}</h3>
+                    <p>${trans.noResults}</p>
+            `;
+
+            if (suggestions.length > 0) {
+                html += `
+                    <div class="suggestion-box">
+                        <h4>${trans.didYouMean}</h4>
+                        <div class="suggestion-list">
+                            ${suggestions.map(s => `<span class="suggestion-chip" data-value="${this.escapeHtml(s)}">${this.escapeHtml(s)}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += `</div>`; 
+            
+            try {
+                const randomRes = await fetch('/api/surprise');
+                const randomData = await randomRes.json();
+                
+                if(randomData.results && randomData.results.length > 0) {
+                    const randomGames = randomData.results.slice(0, 4); 
+                    
+                    html += `
+                        <div class="random-recs-box">
+                            <h3 class="random-recs-title">${trans.randomRecsTitle}</h3>
+                            <div class="result-grid">
+                                ${randomGames.map((game, i) => this.createGameCardHtml(game, i)).join('')}
+                            </div>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                         randomGames.forEach(game => this.createRadarChart(game));
+                    }, 100);
+                }
+            } catch(e) {}
+
+            resultSection.innerHTML = html;
         }
 
         getErrorMessage(error) {
@@ -388,14 +546,14 @@
         displayResults(data) {
             const resultSection = document.getElementById('result');
             if (!data || !data.results || data.results.length === 0) {
-                resultSection.innerHTML = `<div class="no-results glass-effect"><h3>${this.translations[this.currentLang].noResults}</h3></div>`;
+                this.showErrorWithSuggestions(data?.query || "");
                 return;
             }
             
             const validResults = data.results.filter(game => game.Name && game.similarity > 0.1);
             if(validResults.length === 0) {
-                 resultSection.innerHTML = `<div class="no-results glass-effect"><h3>${this.translations[this.currentLang].noResults}</h3></div>`;
-                return;
+                 this.showErrorWithSuggestions(data.query);
+                 return;
             }
 
             const similarGames = validResults.filter(g => (g.similarity || 0) * 100 >= 50);
@@ -417,7 +575,7 @@
 
             setTimeout(() => {
                 validResults.forEach(game => this.createRadarChart(game));
-            }, 100);
+            }, 50);
         }
         
         createGameCardHtml(game, index) {
@@ -427,9 +585,6 @@
             const imageUrl = game.ImageURL;
             const playTime = game.playtime ? Math.round(game.playtime / 60) + 'h' : 'N/A';
             const year = game.year || 'N/A';
-            
-            const platformIcons = [];
-            if (game.windows) platformIcons.push('<i class="fab fa-windows" title="Windows"></i>');
             
             const isFavorite = !!this.favorites[game.AppID];
             const favoriteIcon = isFavorite ? 'fas' : 'far';
@@ -449,6 +604,9 @@
                         <div class="game-actions" data-game-data="${gameDataForAttr}">
                             <button class="favorite-btn" aria-label="${isFavorite ? this.translations[this.currentLang].removeFromFavorites : this.translations[this.currentLang].addToFavorites}">
                                 <i class="${favoriteIcon} fa-heart"></i>
+                            </button>
+                            <button class="comment-btn" aria-label="Yorumlar">
+                                <i class="fas fa-comment-alt"></i>
                             </button>
                             <button class="share-btn" aria-label="${this.translations[this.currentLang].shareGame}">
                                 <i class="fas fa-share-alt"></i>
@@ -484,6 +642,11 @@
         createRadarChart(game) {
             const ctx = document.getElementById(`chart-${game.AppID}`);
             if (!ctx) return;
+            
+            if (this.charts[game.AppID]) {
+                this.charts[game.AppID].destroy();
+            }
+
             const b = game.breakdown;
             const labels = [
                 this.translations[this.currentLang].visual,
@@ -535,23 +698,13 @@
         }
 
         refreshCharts() {
-            const keys = Object.keys(this.charts);
-            if (keys.length === 0) return;
-            keys.forEach(key => {
-               this.charts[key].destroy();
-            });
-            this.charts = {};
-            const cards = document.querySelectorAll('.game-card');
-            cards.forEach(card => {
-               const gameData = JSON.parse(card.querySelector('.game-actions').dataset.gameData);
-               
-               const chartElement = card.querySelector('canvas');
-               if(chartElement) {
-                   
-                   const breakdown = {visual: 50, genre: 50, gameplay: 50, price: 50, popularity: 50}; 
-                   this.createRadarChart({AppID: gameData.appid, breakdown: breakdown}); 
-               }
-            });
+            if (this.lastSearchResults) {
+                if(this.lastSearchResults.error) {
+                    this.showErrorWithSuggestions(this.lastSearchResults.query);
+                } else {
+                    this.displayResults(this.lastSearchResults);
+                }
+            }
         }
 
         escapeHtml(text) {
@@ -568,9 +721,11 @@
                 this.showToast(this.translations[this.currentLang].addToFavorites, 'success');
             }
             localStorage.setItem('gameFavorites', JSON.stringify(this.favorites));
-            document.querySelectorAll(`.game-card[data-game-id="${gameId}"] .favorite-btn i, .favorite-game[data-game-id="${gameId}"] .favorite-btn i`).forEach(icon => {
+            
+            document.querySelectorAll(`.game-card[data-game-id="${gameId}"] .favorite-btn i`).forEach(icon => {
                 icon.className = this.favorites[gameId] ? 'fas fa-heart' : 'far fa-heart';
             });
+            
             this.renderFavorites();
         }
 
@@ -578,7 +733,7 @@
             const list = document.getElementById('favoritesList');
             const favIds = Object.keys(this.favorites);
             if(favIds.length === 0) {
-                list.innerHTML = `<div class="no-favorites">${this.translations[this.currentLang].noFavorites}</div>`;
+                list.innerHTML = `<div class="no-favorites" style="padding:1rem; text-align:center; color:var(--text-secondary)">${this.translations[this.currentLang].noFavorites}</div>`;
                 return;
             }
             list.innerHTML = favIds.map(id => this.createFavoriteGameHtml(this.favorites[id])).join('');
@@ -592,7 +747,7 @@
                     <img src="${imageUrl}" class="favorite-game-image" alt="${this.escapeHtml(game.name)}">
                     <div class="favorite-game-info">
                         <h4>${this.escapeHtml(game.name)}</h4>
-                        <div class="favorite-game-price">${priceText}</div>
+                        <div class="favorite-game-price">${this.translations[this.currentLang].price}: ${priceText}</div>
                     </div>
                     <div class="favorite-game-actions">
                          <a href="${game.steamUrl}" target="_blank" rel="noopener noreferrer" class="btn-view small"><i class="fab fa-steam"></i></a>
@@ -697,7 +852,7 @@
         renderSearchHistory() {
             const list = document.getElementById('historyList');
             if (this.searchHistory.length === 0) {
-                list.innerHTML = `<li class="history-item">${this.translations[this.currentLang].noHistory}</li>`;
+                list.innerHTML = `<li class="history-item" style="justify-content:center; color:var(--text-secondary)">${this.translations[this.currentLang].noHistory}</li>`;
                 return;
             }
             list.innerHTML = this.searchHistory.map(game => `
@@ -757,6 +912,100 @@
             setTimeout(() => screen.style.display = 'none', 500);
         }
         
+        openCommentsModal(appId, gameName) {
+            let modalOverlay = document.querySelector('.modal-overlay');
+            if(!modalOverlay) {
+                modalOverlay = document.createElement('div');
+                modalOverlay.className = 'modal-overlay';
+                document.body.appendChild(modalOverlay);
+            }
+            
+            const trans = this.translations[this.currentLang];
+            modalOverlay.innerHTML = `
+                <div class="modal glass-effect">
+                    <div class="modal-header">
+                        <h3>${trans.commentsTitle} - ${this.escapeHtml(gameName)}</h3>
+                        <button class="close-modal"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="commentsList" class="comments-list">
+                            <div style="text-align:center; padding:1rem;"><div class="spinner-large" style="width:30px; height:30px;"></div></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <form id="commentForm" class="comment-form" data-appid="${appId}">
+                            <textarea class="comment-input" placeholder="${trans.yourCommentPlaceholder}" required></textarea>
+                            <button type="submit" class="submit-comment-btn">${trans.submitComment}</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+            
+            this.fetchComments(appId);
+            
+            modalOverlay.querySelector('#commentForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.postComment(appId);
+            });
+        }
+
+        closeModal() {
+            const modal = document.querySelector('.modal-overlay');
+            if (modal) modal.remove();
+        }
+
+        async fetchComments(appId) {
+            try {
+                const res = await fetch(`/api/comments?appid=${appId}`);
+                if (!res.ok) throw new Error('Fetch failed');
+                const comments = await res.json();
+                this.renderComments(comments);
+            } catch (e) {
+                document.getElementById('commentsList').innerHTML = `<div class="error-message">${this.translations[this.currentLang].errorMessage}</div>`;
+            }
+        }
+
+        async postComment(appId) {
+            const input = document.querySelector('.comment-input');
+            const content = input.value.trim();
+            if (!content) return;
+
+            try {
+                const res = await fetch('/api/comments', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({appid: appId, content: content})
+                });
+                
+                if (!res.ok) throw new Error('Post failed');
+                
+                input.value = '';
+                this.fetchComments(appId);
+            } catch (e) {
+                alert(this.translations[this.currentLang].errorMessage);
+            }
+        }
+
+        renderComments(comments) {
+            const list = document.getElementById('commentsList');
+            const trans = this.translations[this.currentLang];
+            
+            if (!comments || comments.length === 0) {
+                list.innerHTML = `<div class="no-comments">${trans.noComments}</div>`;
+                return;
+            }
+
+            list.innerHTML = comments.map(c => `
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-author">${trans.anonymousUser}</span>
+                        <span class="comment-date">${new Date(c.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div class="comment-text">${this.escapeHtml(c.content)}</div>
+                </div>
+            `).join('');
+        }
+
         debounce(func, wait) {
             let timeout;
             return function executedFunction(...args) {
@@ -770,6 +1019,6 @@
         }
     }
 
-    window.gameFinder = new GameFinder();
+    window.gameHorizon = new GameHorizon();
 
 })();

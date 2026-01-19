@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gamefinder-v1';
+const CACHE_NAME = 'gamehorizon-v1';
 const urlsToCache = [
   '/',
   '/static/style.css',

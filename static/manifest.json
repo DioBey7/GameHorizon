@@ -1,6 +1,6 @@
 {
-  "name": "GameFinder",
-  "short_name": "GameFinder",
+  "name": "GameHorizon",
+  "short_name": "GameHorizon",
   "description": "Akıllı Oyun Keşif Platformu",
   "start_url": "/",
   "display": "standalone",

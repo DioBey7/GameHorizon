@@ -9,8 +9,8 @@ import os
 import threading
 import time
 import sys
+import sqlite3
 
-# Loglama Ayarları - Konsola basmasını garanti ediyoruz
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -27,14 +27,17 @@ class Config:
     CACHE_TIMEOUT = 3600
     RATE_LIMIT = "300 per hour"
 
-# Global Değişkenler
 recommender = None
 init_done = False
 init_error = None
 init_lock = threading.Lock()
 
+def get_db_connection():
+    conn = sqlite3.connect(Config.DB_PATH)
+    conn.row_factory = sqlite3.Row
+    return conn
+
 def initialize_backend():
-    """Arka planda modeli başlatan fonksiyon"""
     global recommender, init_done, init_error
     
     with init_lock:
@@ -63,7 +66,6 @@ def initialize_backend():
             init_error = str(e)
             logger.error(f"Model başlatma hatası: {e}", exc_info=True)
 
-# Flask Limiter Ayarları
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
@@ -141,6 +143,47 @@ def surprise():
             "results": results
         })
     return jsonify({"error": "Sürpriz oyun bulunamadı"}), 404
+
+@app.route('/api/comments', methods=['GET'])
+def get_comments():
+    appid = request.args.get('appid')
+    if not appid:
+        return jsonify({"error": "AppID required"}), 400
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT content, created_at FROM comments WHERE appid = ? ORDER BY created_at DESC", (appid,))
+        comments = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify(comments)
+    except Exception as e:
+        logger.error(f"Error fetching comments: {e}")
+        return jsonify({"error": "Failed to fetch comments"}), 500
+
+@app.route('/api/comments', methods=['POST'])
+@limiter.limit("5 per minute")
+def post_comment():
+    data = request.json
+    appid = data.get('appid')
+    content = data.get('content', '').strip()
+    
+    if not appid or not content:
+        return jsonify({"error": "AppID and content required"}), 400
+    
+    if len(content) > 500:
+        return jsonify({"error": "Comment too long (max 500 chars)"}), 400
+        
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO comments (appid, content) VALUES (?, ?)", (appid, content))
+        conn.commit()
+        conn.close()
+        return jsonify({"success": True})
+    except Exception as e:
+        logger.error(f"Error saving comment: {e}")
+        return jsonify({"error": "Failed to save comment"}), 500
 
 def start_background_thread():
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true" or not app.debug:
