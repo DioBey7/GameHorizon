@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: gamehorizon_app
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+      - ./games.db:/app/games.db
+    environment:
+      - ENV=production
+      - API_PORT=5000
+      - API_HOST=0.0.0.0
+    restart: always

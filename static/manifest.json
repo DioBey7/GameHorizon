@@ -1,24 +1,22 @@
 {
-  "name": "GameHorizon",
-  "short_name": "GameHorizon",
-  "description": "Akıllı Oyun Keşif Platformu",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#6c5ce7",
-  "orientation": "portrait",
-  "icons": [
-    {
-      "src": "/static/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/static/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "categories": ["games", "entertainment"],
-  "lang": "tr"
+    "name": "GameHorizon Neural Engine",
+    "short_name": "GameHorizon",
+    "description": "Yapay Zeka Destekli Oyun Keşif Platformu",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#030305",
+    "theme_color": "#8a2be2",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/static/icon-192.png",
+            "type": "image/png",
+            "sizes": "192x192"
+        },
+        {
+            "src": "/static/icon-512.png",
+            "type": "image/png",
+            "sizes": "512x512"
+        }
+    ]
 }

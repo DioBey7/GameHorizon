@@ -3,210 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GameHorizon - Akıllı Oyun Keşif Platformu</title>
+    <title>GameHorizon | Neural Discovery Engine</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="/static/manifest.json">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <meta name="theme-color" content="#6c5ce7">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
-    <link rel="manifest" href="/static/manifest.json" crossorigin="use-credentials">
 </head>
 <body>
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="spinner-large"></div>
-            <div id="loading-text" class="loading-text" data-translate="loadingText">Sistem yükleniyor... Lütfen bekleyiniz.</div>
-        </div>
-    </div>
-
-    <header class="glass-effect">
-        <div class="header-content">
-            <h1 id="title" tabindex="0"><i class="fas fa-gamepad"></i> GameHorizon</h1>
-        </div>
-
-        <div class="controls">
-            <button id="showFavorites" class="favorites-toggle" aria-label="Favoriler">
-                <i class="fas fa-heart"></i>
-            </button>
-
-            <div id="langSelector" aria-label="Dil seçici" role="radiogroup" class="lang-selector">
-                <button type="button" data-lang="tr" class="lang-btn active" aria-pressed="true" role="radio" tabindex="0">
-                    <i class="fas fa-language"></i> <span class="lang-text" data-translate="trLangText">TÜRKÇE</span>
-                </button>
-                <button type="button" data-lang="en" class="lang-btn" aria-pressed="false" role="radio" tabindex="-1">
-                    <i class="fas fa-language"></i> <span class="lang-text" data-translate="enLangText">ENGLISH</span>
-                </button>
+    <div class="noise-overlay"></div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="brand-container">
+                <div class="logo">GAME<span>HORIZON</span></div>
+                <div class="logo-subtitle">NÖRAL KEŞİF MOTORU v2.5</div>
             </div>
-
-            <button id="themeToggle" class="theme-toggle" aria-label="Tema değiştirici">
-                <i class="fas fa-moon theme-icon"></i> <span class="theme-text" data-translate="darkThemeText">KOYU TEMA</span>
-            </button>
-        </div>
-    </header>
-
-    <div class="favorites-section glass-effect" id="favoritesSection">
-        <div class="favorites-header">
-            <h3 id="favorites-title" data-translate="favoritesTitle">Favori Oyunlar</h3>
-            <button class="close-favorites" id="closeFavorites" aria-label="Favorileri kapat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="favorites-list" id="favoritesList"></div>
-    </div>
-
-    <main>
-        <div class="info-card glass-effect" id="infoCard">
-            <button class="close-info" id="closeInfo" aria-label="Bilgilendirme kartını kapat">
-                <i class="fas fa-times"></i>
-            </button>
-            <h2 id="info-title"><i class="fas fa-magic"></i> <span data-translate="infoTitle">Oyun Keşif Yolculuğunuz</span></h2>
-            <p id="info-text" data-translate="infoText">GameHorizon, sevdiğiniz oyunlara benzer yeni oyunları keşfetmenize yardımcı akıllı bir steam oyun öneri sistemidir. Favori oyununuzu yazın, benzer oyunların listesini eşleşme yüzdeleri ve kriterleriyle beraber alın ve yeni maceralara yelken açın!</p>
-
-            <h3 id="how-to-use-title"><i class="fas fa-question-circle"></i> <span data-translate="howToUseTitle">Nasıl Kullanılır?</span></h3>
-            <ol class="info-steps" id="info-steps">
-                <li id="step-1" data-translate="step1">Arama kutusuna sevdiğin bir oyunun adını yaz. Çoklu arama için '+' kullanabilirsin (örn: Halo + Doom).</li>
-                <li id="step-2" data-translate="step2">Önerilen oyunlardan birini seç veya "Enter" tuşuna basarak direkt arama yap.</li>
-                <li id="step-3" data-translate="step3">Öneri kartlarını incele; önerileri benzerlik yüzdeleri, ortalama fiyat, tür ve diğer eşleşme kriterlerine göre değerlendirebilirsin.</li>
-                <li id="step-4" data-translate="step4">Önerilerde özellikle görmek istediğin ya da beğenmediğin unsurları belirtmek için tür filtrelerini kullanabilirsin.</li>
-                <li id="step-5" data-translate="step5">Beğendiğin oyunun öneri kartına tıklayarak Steam sayfasına gidebilir paylaş butonuna basarak aldığın önerileri paylaşabilirsin.</li>
-                <li id="step-6" data-translate="step6">Geçmiş bölümünden önceki aramalarına ulaşabilir öneriler için kalp butonuna basarak favoriler kısmına önerileri ekleyebilirsin.</li>
-                <li id="step-7" data-translate="step7">Sağ üst köşeden tema ve dil ayarlarını değiştirebilirsin.</li>
-                <li id="step-8" data-translate="step8">Önerilen oyun kartlarındaki yorum butonuna tıklayarak kullanıcı yorumlarını oku ve kendi yorumunu ekle.</li>
-            </ol>
-
-            <div class="warning-section">
-                <h3><i class="fas fa-exclamation-triangle"></i> <span data-translate="warningTitle">Önemli Hatırlatmalar</span></h3>
-                <ul class="warning-list">
-                    <li data-translate="warning1">Görüntülenen fiyatlar, eklentiler ve ana oyunlar için yaklaşık fiyatlardır ve indirim dönemlerinde değişiklik gösterebilir.</li>
-                    <li data-translate="warning2">Öneriler; görsel, tür, oynanış, tema, popülarite ve fiyat gibi birçok faktörün karmaşık analiziyle oluşturulur.</li>
-                    <li data-translate="warning3">En doğru sonuçlar için oyun adlarını ve filtre terimlerini (Örn: Action, RPG) İngilizce ve tam yazmaya özen gösterin.</li>
-                    <li data-translate="warning4">Yorumlar, kullanıcıların önerilen oyunlar hakkındaki deneyimlerini paylaşmaları için önemlidir. Lütfen etik kurallarına uyunuz.</li>
-                    <li data-translate="warning5">GameHorizon, Steam veritabanına bağlıdır ve bazı oyunlar öneri sisteminde yer almayabilir.</li>
-                    <li data-translate="warning6">Uygulama, internet bağlantısı gerektirir ve bağlantı sorunları performansı etkileyebilir.</li>
-                    <li data-translate="warning7">Kullanıcı verileri (geçmiş ve favoriler) yalnızca tarayıcıda saklanır ve üçüncü taraflarla paylaşılmaz.</li>
-                    <li data-translate="warning8">GameHorizon, Steam'in resmi bir ürünü değildir ve bağımsız olarak geliştirilmiştir.</li>
-                    <li data-translate="warning9">Öneri ve fiyat bilgileri zamanla değişebilir; en güncel bilgiler için Steam'i kontrol ediniz.</li>
-                    <li data-translate="warning10">Daha fazla öneri ve iyileştirme için linkedin ve github linklerimden bana ulaşabilirsiniz.</li>
-                </ul>
-            </div>
-
-            <button class="btn-info" id="gotItBtn">
-                <i class="fas fa-check"></i> <span id="got-it-text" data-translate="gotItText">ANLADIM!</span>
-            </button>
-        </div>
-
-        <form id="recommendForm" autocomplete="off" aria-describedby="result" class="recommend-form glass-effect">
-            <div class="input-group">
-                <label for="game_name" id="label-game-name"><i class="fas fa-search"></i> <span data-translate="labelGameName">Bir oyun adı girin:</span></label>
-                <div class="search-controls">
-                    <div class="autocomplete" role="combobox" aria-haspopup="listbox" aria-owns="autocomplete-list" aria-expanded="false">
-                        <input
-                            type="text"
-                            id="game_name"
-                            name="game_name"
-                            required
-                            autocomplete="off"
-                            aria-autocomplete="list"
-                            aria-controls="autocomplete-list"
-                            aria-activedescendant=""
-                            spellcheck="false"
-                            aria-label="Oyun adı"
-                            aria-describedby="autocomplete-help"
-                            placeholder="Oyunun adını tam yazmayı unutma!"
-                            data-translate="placeholder"
-                        />
-                        <div class="autocomplete-spinner" id="autocomplete-spinner" hidden></div>
-                        <div id="autocomplete-list" role="listbox" aria-label="Oyun önerileri" tabindex="-1" hidden></div>
-                    </div>
-                    <button type="button" id="btn-surprise" class="btn-secondary" aria-label="Bana Sürpriz Yap">
-                        <i class="fas fa-dice"></i>
-                    </button>
+            
+            <div class="filter-section">
+                <h3>NÖRAL AĞ AĞIRLIKLARI</h3>
+                <div class="slider-group">
+                    <label>Görsel Stil & Sanat <span id="val-visual">0.25</span></label>
+                    <input type="range" id="w_visual" min="0" max="1" step="0.05" value="0.25">
                 </div>
-                <small id="autocomplete-help" class="sr-only">Yukarı ve aşağı ok tuşları ile öneriler arasında gezinin. "Enter" ile seçin.</small>
-            </div>
-
-            <button type="button" id="toggle-filters" class="btn-text">
-                <i class="fas fa-sliders-h"></i> <span data-translate="toggleFilters">Gelişmiş Filtreler</span>
-            </button>
-
-            <div id="filter-panel" class="filter-panel" style="display: none;">
-                <div class="filter-row">
-                    <div class="input-group">
-                        <label for="genre_filter"><i class="fas fa-tags"></i> <span data-translate="genreFilter">Tür Filtreleme:</span></label>
-                        <input
-                            type="text"
-                            id="genre_filter"
-                            name="genre_filter"
-                            autocomplete="off"
-                            placeholder="Örneğin: Action, RPG"
-                        />
-                    </div>
-                    <div class="input-group">
-                        <label for="exclude_filter"><i class="fas fa-ban"></i> <span data-translate="excludeFilter">Dışlama Filtresi:</span></label>
-                        <input
-                            type="text"
-                            id="exclude_filter"
-                            name="exclude_filter"
-                            autocomplete="off"
-                            placeholder="Örneğin: Sports, Racing"
-                        />
-                    </div>
+                <div class="slider-group">
+                    <label>Oynanış Mekaniği <span id="val-tag">0.25</span></label>
+                    <input type="range" id="w_tag" min="0" max="1" step="0.05" value="0.25">
                 </div>
-
-                <div class="filter-row">
-                    <div class="input-group">
-                        <label><i class="fas fa-calendar-alt"></i> <span data-translate="yearRange">Yıl Aralığı:</span></label>
-                        <div class="range-inputs">
-                            <input type="number" id="year_min" placeholder="Min" min="1990" max="2030" oninput="validity.valid||(value='');">
-                            <input type="number" id="year_max" placeholder="Max" min="1990" max="2030" oninput="validity.valid||(value='');">
-                        </div>
-                    </div>
-                    <div class="input-group">
-                        <label><i class="fas fa-clock"></i> <span data-translate="playtimeRange">Oynanış (Saat):</span></label>
-                        <div class="range-inputs">
-                            <input type="number" id="playtime_min" placeholder="Min" min="0" oninput="validity.valid||(value='');">
-                            <input type="number" id="playtime_max" placeholder="Max" min="0" oninput="validity.valid||(value='');">
-                        </div>
-                    </div>
+                <div class="slider-group">
+                    <label>Karakteristik Tür <span id="val-genre">0.10</span></label>
+                    <input type="range" id="w_genre" min="0" max="1" step="0.05" value="0.10">
+                </div>
+                <div class="slider-group">
+                    <label>Genel Kalite Skoru <span id="val-quality">0.15</span></label>
+                    <input type="range" id="w_quality" min="0" max="1" step="0.05" value="0.15">
+                </div>
+                <div class="slider-group">
+                    <label>Global Popülerlik <span id="val-popularity">0.10</span></label>
+                    <input type="range" id="w_popularity" min="0" max="1" step="0.05" value="0.10">
                 </div>
             </div>
 
-            <div class="form-actions">
-                <button type="submit" id="btn-submit" class="submit-btn">
-                    <span id="btn-submit-text" data-translate="btnSubmitText">ÖNERİLERİ GÖSTER</span>
-                </button>
-            </div>
-        </form>
-
-        <section id="result" role="region" aria-live="polite" tabindex="0" class="result-section"></section>
-
-        <aside id="searchHistory" aria-label="Geçmiş aramalar" class="search-history glass-effect">
-            <h3 id="history-title"><i class="fas fa-history"></i> <span data-translate="historyTitle">Geçmiş Aramalar</span></h3>
-            <ul id="historyList" role="list" class="history-list"></ul>
-            <div class="history-actions">
-                <button id="clearHistory" class="clear-history-btn">
-                    <i class="fas fa-trash-alt"></i> <span id="clear-history-text" data-translate="clearHistoryText">GEÇMİŞİ TEMİZLE</span>
-                </button>
+            <div class="filter-section">
+                <h3>OYUN ÖNERİ FİLTRELERİ</h3>
+                <input type="text" id="f_genres" placeholder="Tür Filtresi (Örn: RPG, Noir...)">
+                <input type="text" id="f_exclude" placeholder="Hariç Tutulacak Türler (Örn: FPS...)">
+                <input type="number" id="f_price" placeholder="Aranan Maksimum Fiyat ($)" min="0">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="f_indie">
+                    <span class="custom-checkbox"></span>
+                    SADECE BAĞIMSIZ YAPIMLAR (INDIE) ÖNERİLSİN
+                </label>
             </div>
         </aside>
-    </main>
 
-    <footer class="footer glass-effect">
-        <div class="social-links">
-            <a href="https://github.com/DioBey7" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i> GitHub</a>
-            <a href="https://www.linkedin.com/in/beyza-yaz%C4%B1c%C4%B1-400183332" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i> LinkedIn</a>
-        </div>
-        <p>&copy; 2025 GameHorizon</p>
-    </footer>
+        <main class="content">
+            <header class="search-header">
+                <div class="search-wrapper">
+                    <input type="text" id="search-input" placeholder="Referans oyunu girin..." autocomplete="off">
+                    <ul id="autocomplete-list" class="autocomplete-list hidden"></ul>
+                </div>
+                <button id="btn-info" class="cyber-btn">SİSTEM REHBERİ</button>
+                <button id="btn-surprise" class="cyber-btn">SÜRPRİZ ÖNERİ</button>
+            </header>
 
-    <button id="installButton" class="install-button" style="display: none;">
-        <i class="fas fa-download"></i> <span data-translate="installApp">Uygulamayı Yükle</span>
-    </button>
+            <div id="loading" class="hidden">
+                <div class="cyber-loader"></div>
+            </div>
 
+            <div id="results-container" class="results-grid"></div>
+
+            <div id="chart-modal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="close-modal">&times;</div>
+                    <h3 id="chart-title">SİNİRSEL ANALİZ VERİ ÖNERİ KIRILIMI</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="info-modal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="close-modal">&times;</div>
+                    <h3 class="guide-header">SİSTEM REHBERİ / DİKKAT EDİLMESİ GEREKENLER</h3>
+                    <div class="info-body">
+                        <div class="guide-block">
+                            <h4>01. Analiz ve Öneri Mantığı</h4>
+                            <p>GameHorizon, klasik etiket eşleştirmesinin ötesinde çalışır. Girdiğiniz referans oyunu 120 boyutlu bir vektör uzayına yerleştirir ve semantik benzerliği olan "komşu" düğümleri tespit eder. Öneriler kümesi, bu benzerlikleri temel alarak oluşturulur ve kullanıcının tercihlerine göre sıralanır.</p>
+                        </div>
+                        <div class="guide-block">
+                            <h4>02. Ağırlık Motoru Kalibrasyonu</h4>
+                            <p>Sol paneldeki sürgülerle sistemin önceliklerini anlık olarak değiştirebilirsiniz:</p>
+                            <ul>
+                                <li><strong>GÖRSEL STİL & SANAT:</strong> Sanat yönetimi, grafik teknolojisi ve kamera açısı benzerliğini önceler.</li>
+                                <li><strong>OYNANIŞ MEKANİĞİ:</strong> Oyunun saf oynanış döngüsünü (gameplay loop) ve etkileşim türlerini baz alır.</li>
+                                <li><strong>KALİTE & POPÜLERLİK:</strong> Steam oyuncu skorlarını ve global oynanma oranlarını matematiksel olarak ağırlıklandırır.</li>
+                                <li><strong>KARAKTERİSTİK TÜR:</strong> Oyunun belirli karakteristiklerini (örn. tür, tema, dil) temel alır.</li>
+                                <li><strong>GENEL KALİTE SKORU:</strong> Oyunun pozitif ve negatif değerlendirmelerinin ortalamasını alarak bir kalite skoru oluşturur.</li>
+                                <li><strong>GLOBAL POPÜLERLİK:</strong> Oyunun global olarak ne kadar popüler olduğuna göre ağırlıklandırılır.</li>
+                            </ul>
+                        </div>
+                        <div class="guide-block">
+                            <h4>03. Dikkat Edilmesi Gerekenler</h4>
+                            <ul>
+                                <li><strong>Parametre Çakışması:</strong> Hem çok düşük fiyat hem de spesifik tür filtrelerini (Örn: AAA RPG aratıp 5$ sınırı koymak) aynı anda kullanmak aday havuzunu boşaltabilir.</li>
+                                <li><strong>Eksik Veri Girişi:</strong> Yazarken listede oyun çıkmıyorsa, veritabanı indekslemesi için oyunun tam adını (Örn: "ELDEN RING") girmeye çalışın.</li>
+                                <li><strong>Filtre Kilidi:</strong> Bağımsız yapım filtresi aktifken büyük bütçeli (AAA) yapımlar sistem tarafından otomatik olarak elenir.</li>
+                                <li><strong>Development Aşaması:</strong> Sistem, henüz geliştirme aşamasında olduğu için bazı özellikler sınırlı olabilir.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
     <script src="/static/script.js"></script>
 </body>
 </html>
